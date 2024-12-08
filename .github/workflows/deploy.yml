@@ -36,7 +36,7 @@ jobs:
     steps:
       # SSH into EC2, pull the new Docker image, and deploy it
       - name: SSH to EC2 and deploy
-        uses: appleboy/ssh-action@v0.1.6
+      uses: appleboy/ssh-action@v0.1.8 
         with:
           host: ${{ secrets.EC2_HOST }}  # EC2 public IP or DNS
           username: ${{ secrets.EC2_USER }}  # EC2 user (e.g., ec2-user, ubuntu)
