@@ -4,6 +4,7 @@ import Loader from "./pages/Loader/Loader.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchMyProfile } from "./features/userSlice.js";
 import ProtectedRoute from "./layout/ProtectedRoute.jsx";
+import AdminRoute from "./layout/AdminRoute.jsx";
 
 const Login = React.lazy(() => import("./pages/Login/Login"));
 const NotFound = React.lazy(() => import("./pages/NotFound/NotFound"));
@@ -17,6 +18,10 @@ const Profile = React.lazy(() => import("./pages/Profile/Profile.jsx"));
 const Shared = React.lazy(() => import("./pages/Shared/Shared.jsx"));
 const SingleFile = React.lazy(() => import("./pages/SingleFile/SingleFile.jsx"));
 const MyShared = React.lazy(() => import("./pages/MyShared/MyShared.jsx"));
+const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard/AdminDashboard.jsx"));
+const AllUsers = React.lazy(() => import("./pages/AllUsers/AllUsers.jsx"));
+
+
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
 
 
@@ -47,8 +52,11 @@ const App = () => {
             <Route path="dashboard/shared/:id" element={<SingleFile />} />
             <Route path="dashboard/bin/all" element={<Bin />} />
 
+            <Route element={<AdminRoute />}>
+          <Route path="/admin/users" element={<AllUsers />} /> 
+        </Route>
 
-          </Route>
+          </Route>  
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

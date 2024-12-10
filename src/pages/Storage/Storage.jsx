@@ -26,6 +26,8 @@ import {
   fetchFiles,
   deleteFile,
   shareFile,
+  fileDownload,
+  fileView,
 } from "../../features/filesSlice"; // Import the deleteFile action
 import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
@@ -93,9 +95,15 @@ const Storage = () => {
     (page - 1) * filesPerPage,
     page * filesPerPage
   );
-  const handleView = (file) => {
+  const handleView = async (file) => {
     setSelectedFile(file);
     setViewModalOpen(true);
+
+    const res = await dispatch(fileView(file.id))
+    if (res.payload?.success) {
+      toast.success(`${file.name} opened`);
+    }
+
   };
 
   const handleDownload = async (file) => {
@@ -119,9 +127,13 @@ const Storage = () => {
       // Clean up by removing the link and revoking the object URL
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
+      const res = await dispatch(fileDownload(file.id))
+
+      if (res.payload?.success) {
+        toast.success(`${file.name} downloaded successfully`);
+      }
 
       // Success message
-      toast.success(`${file.name} downloaded successfully`);
     } catch (error) {
       toast.error(`Failed to download ${file.name}`);
       console.error(error);
@@ -400,6 +412,12 @@ const Storage = () => {
                     <Typography variant="body2" color="textSecondary">
                       {new Date(file.updatedAt).toLocaleTimeString()},{" "}
                       {new Date(file.updatedAt).toLocaleDateString()}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                     Total Downloads: {file.totalDownloads}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                     Total Views: {file.totalViews}
                     </Typography>
                   </Box>
                 </Box>

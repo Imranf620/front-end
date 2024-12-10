@@ -124,7 +124,7 @@ const Login = () => {
 
       <section className="w-1/2 hidden md:block">
         <img
-          src="https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?w=1000&auto=format&fit=crop&q=80"
+          src="./hand.jpg"
           alt="Sign In"
           className="w-full h-full object-cover"
         />

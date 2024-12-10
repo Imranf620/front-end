@@ -123,6 +123,40 @@ export const uploadFile = createAsyncThunk(
   })
 
 
+  export const fileDownload = createAsyncThunk("fileDownload", async (fileId, {rejectWithValue})=>{
+
+    try {
+      const res = await axios.get(`${baseApi}/files/download/${fileId}`, {
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  })
+
+  export const fileView = createAsyncThunk("fileView", async(fileId, {rejectWithValue})=>{
+    try {
+      const res = await axios.get(`${baseApi}/files/view/${fileId}`, {
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  })
+
+  export const invertStatus  = createAsyncThunk("invertStatus", async(userId, {rejectWithValue})=>{
+    try {
+      const res = await axios.post(`${baseApi}/admin/user/${userId}/status`, {},{
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  })
+
 
 const initialState = {
   loading: false,

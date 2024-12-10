@@ -6,12 +6,17 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import ShareIcon from '@mui/icons-material/Share';
 import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
+import { useSelector } from 'react-redux';
+import GroupIcon from '@mui/icons-material/Group';
 
 const SideBar = ({handleToggle}) => {
   const { isDarkMode } = useTheme();
+
+  const { user } = useSelector((state) => state.auth);
+  console.log(user?.user)
   const location = useLocation();
 
-  const sidebarItems = [
+  const sidebarItems = user?.user.role==="USER" ? [
     { path: '/', label: 'Dashboard', icon: <Dashboard style={{ color: 'white' }} /> },
     { path: '/dashboard/files', label: 'Files', icon: <Folder style={{ color: 'white' }} /> },
     { path: '/dashboard/images', label: 'Images', icon: <Image style={{ color: 'white' }} /> },
@@ -22,7 +27,11 @@ const SideBar = ({handleToggle}) => {
     { path: '/dashboard/all/accessible', label: 'Accessible', icon: <AccessibilityNewIcon style={{ color: 'white' }} /> },
     { path: '/dashboard/bin/all', label: 'Trash', icon: <DeleteIcon style={{ color: 'white' }} /> },
 
-  ];
+  ]:[
+    { path: '/admin/users', label: 'Users', icon: <GroupIcon style={{ color: 'white' }} /> },
+    
+
+  ]
 
   const getLinkClass = (path) => {
     return location.pathname === path ? 'bg-[#681c75]' : '';
