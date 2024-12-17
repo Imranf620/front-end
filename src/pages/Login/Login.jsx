@@ -8,6 +8,8 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../../features/userSlice";
 import { useNavigate } from "react-router-dom";
+import HomeNav from "../../components/homeNav/HomeNav";
+import Footer from "../../components/footer/Footer";
 
 const Login = () => {
   const { user } = useSelector((state) => state.auth);
@@ -45,7 +47,9 @@ const Login = () => {
   };
 
   return (
-    <div className="w-screen h-screen flex">
+    <>
+    <HomeNav/>
+    <div className="w-auto h-full flex">
       <section className="md:w-1/2 w-full h-max md:h-auto flex flex-col justify-center items-center bg-gray-50 p-10">
         <div className="w-3/4 max-w-md flex flex-col gap-6">
           <h2 className="text-3xl font-bold mb-4">Storify</h2>
@@ -130,6 +134,10 @@ const Login = () => {
         />
       </section>
     </div>
+    <Footer/>
+    </>
+
+
   );
 };
 

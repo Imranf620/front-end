@@ -131,15 +131,10 @@ const AllUsers = () => {
                                         </Button>
                                     </TableCell>
                                     <TableCell>
-                                      <div className='flex gap-2'>
-
-                                        <Link to={`/admin/files/${user.id}`}>
-                                            <Button variant="outlined">View Files</Button>
-                                        </Link>
                                         <Link to={`/admin/user/${user.id}`}>
-                                            <Button variant="outlined">View User</Button>
+                                            <Button variant="outlined">View</Button>
                                         </Link>
-                                      </div>
+                                        
                                     </TableCell>
                                 </TableRow>
                             );

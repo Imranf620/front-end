@@ -23,6 +23,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { deleteTrash, fetchTrash, restoreFromBin } from "../../features/trashSlice";
 import { fetchMyProfile } from "../../features/userSlice";
+import { fileDownload, fileView } from "../../features/filesSlice";
+
+
 
 const Bin = () => {
   const { type } = useParams();
@@ -34,6 +37,8 @@ const Bin = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+
 
 
   const filesPerPage = 10;
@@ -68,20 +73,47 @@ const Bin = () => {
 
   const paginatedFiles = filteredFiles.slice((page - 1) * filesPerPage, page * filesPerPage);
 
-  const handleView = (file) => {
-    const fileUrl = `${import.meta.env.VITE_API_URL}/../../${file.path}`;
-    window.open(fileUrl, "_blank");
+  const handleView = async (file) => {
+    
+    setSelectedFile(file?.file);
+    setViewModalOpen(true);
+    
+
+    const res = await dispatch(fileView(file?.file?.id));
+    if (res.payload?.success) {
+      toast.success(`${file?.file?.name} opened`);
+    }
   };
 
-  const handleDownload = (file) => {
-    const fileUrl = `${import.meta.env.VITE_API_URL}/../../${file.path}`;
-    const link = document.createElement("a");
-    link.href = fileUrl;
-    link.download = file.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success(`${file.name} downloaded successfully`);
+
+  const handleDownload = async (file) => {
+    try {
+      console.log("file", file)
+
+      const response = await fetch(file?.file?.path);
+      const blob = await response.blob(); 
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = file?.file.name; 
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      const res = await dispatch(fileDownload(file?.file?.id));
+
+      if (res.payload?.success) {
+        toast.success(`${file?.file?.name} downloaded successfully`);
+      }
+
+    } catch (error) {
+      toast.error(`Failed to download ${file?.file?.name}`);
+      console.error(error);
+    }
   };
 
   
@@ -253,6 +285,48 @@ const Bin = () => {
           </Button>
           <Button onClick={handleDeleteFile} color="secondary">
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        maxWidth="md"
+      >
+        <DialogTitle>View File</DialogTitle>
+        <DialogContent>
+          {selectedFile ? (
+            selectedFile.type.startsWith("image") ? (
+              <img
+                src={selectedFile.path}
+                alt="file"
+                style={{ width: "100%", height: "auto" }}
+              />
+            ) : selectedFile.type === "application/pdf" ? (
+              <embed
+                src={selectedFile.path}
+                width="100%"
+                height="500px"
+                type="application/pdf"
+              />
+            ) : selectedFile.type.startsWith("video") ? (
+              <video controls style={{ width: "100%", height: "auto" }}>
+                <source src={selectedFile.path} type={selectedFile.type} />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                Cannot preview this file type.
+              </Typography>
+            )
+          ) : (
+            <CircularProgress />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewModalOpen(false)} color="secondary">
+            Close
           </Button>
         </DialogActions>
       </Dialog>

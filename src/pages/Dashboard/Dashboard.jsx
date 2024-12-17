@@ -41,7 +41,7 @@ const Dashboard = () => {
       <Paper sx={{ padding: 4, borderRadius: 2, boxShadow: 3 }}>
         <Grid container spacing={4} alignItems="center">
           <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <CircularProgressWithLabel value={user?.percentageUsed} />
+            <CircularProgressWithLabel value={Number(user?.percentageUsed)} />
           </Grid>
 
           <Grid item xs={12} md={6}>

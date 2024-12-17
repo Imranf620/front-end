@@ -38,7 +38,7 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
       setpackagePrices(result.payload.data)
     }
     fetchPricing()
-  }, [])
+  }, [dispatch])
   
 
   const pricing = {

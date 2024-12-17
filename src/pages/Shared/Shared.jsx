@@ -11,11 +11,16 @@ import {
   Paper,
   Pagination,
   CircularProgress,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllAccessibleFiles } from "../../features/filesSlice";
+import { fileDownload, fileView, getAllAccessibleFiles } from "../../features/filesSlice";
 import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -29,6 +34,8 @@ const Shared = () => {
   const [sortBy, setSortBy] = useState("size");
   const [orderDirection, setOrderDirection] = useState("asc");
   const [page, setPage] = useState(1);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
   const { refetch } = useContext(reFetchContext);
 
@@ -92,22 +99,48 @@ const Shared = () => {
     page * filesPerPage
   );
 
-  const handleView = (file) => {
-    const fileUrl = `${import.meta.env.VITE_API_URL}/../../${file.path}`;
-    window.open(fileUrl, "_blank");
+
+  const handleView = async (file) => {
+    setSelectedFile(file);
+    setViewModalOpen(true);
+    
+
+    const res = await dispatch(fileView(file?.id));
+    if (res.payload?.success) {
+      toast.success(`${file?.name} opened`);
+    }
   };
 
-  const handleDownload = (file) => {
-    const fileUrl = `${import.meta.env.VITE_API_URL}/../../${file.path}`;
-    const link = document.createElement("a");
-    link.href = fileUrl;
-    link.download = file.name;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success(`${file.name} downloaded successfully`);
-  };
 
+  const handleDownload = async (file) => {
+    try {
+      console.log("file", file)
+
+      const response = await fetch(file?.path);
+      const blob = await response.blob(); 
+
+      const blobUrl = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = file?.name; 
+      document.body.appendChild(link);
+
+      link.click();
+
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+      const res = await dispatch(fileDownload(file?.id));
+
+      if (res.payload?.success) {
+        toast.success(`${file.name} downloaded successfully`);
+      }
+
+    } catch (error) {
+      toast.error(`Failed to download ${file?.name}`);
+      console.error(error);
+    }
+  };
   const dropdownOptions = (file) => [
     { label: "View", onClick: () => handleView(file) },
     { label: "Download", onClick: () => handleDownload(file) },
@@ -226,6 +259,48 @@ const Shared = () => {
           color="primary"
         />
       </Box>
+
+      <Dialog
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        maxWidth="md"
+      >
+        <DialogTitle>View File</DialogTitle>
+        <DialogContent>
+          {selectedFile ? (
+            selectedFile.type.startsWith("image") ? (
+              <img
+                src={selectedFile.path}
+                alt="file"
+                style={{ width: "100%", height: "auto" }}
+              />
+            ) : selectedFile.type === "application/pdf" ? (
+              <embed
+                src={selectedFile.path}
+                width="100%"
+                height="500px"
+                type="application/pdf"
+              />
+            ) : selectedFile.type.startsWith("video") ? (
+              <video controls style={{ width: "100%", height: "auto" }}>
+                <source src={selectedFile.path} type={selectedFile.type} />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                Cannot preview this file type.
+              </Typography>
+            )
+          ) : (
+            <CircularProgress />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewModalOpen(false)} color="secondary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

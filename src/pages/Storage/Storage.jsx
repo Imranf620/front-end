@@ -17,6 +17,7 @@ import {
   DialogTitle,
   TextField,
   Button,
+  InputAdornment,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
@@ -30,6 +31,7 @@ import {
   fileView,
 } from "../../features/filesSlice"; // Import the deleteFile action
 import { toast } from "react-toastify";
+import SearchIcon from '@mui/icons-material/Search';
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -46,14 +48,15 @@ const Storage = () => {
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [renameFileData, setRenameFileData] = useState(null);
   const [newName, setNewName] = useState("");
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false); 
-  const [fileToDelete, setFileToDelete] = useState(null); 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
   const { refetch, handleRefetch } = useContext(reFetchContext);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareOption, setShareOption] = useState("public");
   const [emailListArray, setEmailListArray] = useState([""]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [keyword, setKeyword] = useState("")
 
   const FRONT_END_URL = import.meta.env.VITE_FRONTEND_API_URL;
 
@@ -67,7 +70,7 @@ const Storage = () => {
     const fetchData = async () => {
       try {
         const response = await dispatch(
-          fetchFiles({ type, sortBy, orderDirection })
+          fetchFiles({ type, sortBy, orderDirection , keyword})
         );
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
@@ -76,7 +79,7 @@ const Storage = () => {
       }
     };
     fetchData();
-  }, [type, sortBy, orderDirection, dispatch, refetch]);
+  }, [type, sortBy, orderDirection, dispatch, refetch,keyword]);
 
   // Handle Sorting Changes
   const handleSortChange = (event) => {
@@ -99,48 +102,39 @@ const Storage = () => {
     setSelectedFile(file);
     setViewModalOpen(true);
 
-    const res = await dispatch(fileView(file.id))
+    const res = await dispatch(fileView(file.id));
     if (res.payload?.success) {
       toast.success(`${file.name} opened`);
     }
-
   };
 
   const handleDownload = async (file) => {
     try {
-      // Fetch the file data (this assumes file.path is a URL to the file)
       const response = await fetch(file.path);
-      const blob = await response.blob(); // Convert the response to a Blob
+      const blob = await response.blob(); 
 
-      // Create an object URL for the Blob
       const blobUrl = URL.createObjectURL(blob);
 
-      // Create a temporary link element
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = file.name; // Set the file name for the download
+      link.download = file.name; 
       document.body.appendChild(link);
 
-      // Trigger the download
       link.click();
 
-      // Clean up by removing the link and revoking the object URL
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
-      const res = await dispatch(fileDownload(file.id))
+      const res = await dispatch(fileDownload(file.id));
 
       if (res.payload?.success) {
         toast.success(`${file.name} downloaded successfully`);
       }
 
-      // Success message
     } catch (error) {
       toast.error(`Failed to download ${file.name}`);
       console.error(error);
     }
   };
-
-  
 
   const handleShare = async (file) => {
     setSelectedFile(file);
@@ -161,7 +155,6 @@ const Storage = () => {
       toast.error("Please enter at least one valid email.");
       return;
     }
-    
 
     const shareData = {
       fileId: selectedFile.id,
@@ -177,7 +170,6 @@ const Storage = () => {
     try {
       const result = await dispatch(shareFile(shareData));
 
-      
       if (result?.payload?.success) {
         toast.success(
           shareOption === "public"
@@ -187,13 +179,11 @@ const Storage = () => {
             : "File set to private!"
         );
 
-        if(shareOption === "public"){
+        if (shareOption === "public") {
           const shareUrl = `${FRONT_END_URL}/dashboard/shared/${shareData.fileId}`;
           navigator.clipboard.writeText(shareUrl);
           toast.success("File link copied to clipboard!");
         }
-      
-          
       } else {
         toast.error("Failed to share file");
       }
@@ -209,9 +199,9 @@ const Storage = () => {
     const nameWithoutExtension = file.name.substring(
       0,
       file.name.lastIndexOf(".")
-    ); 
+    );
     const extension = file.name.substring(file.name.lastIndexOf("."));
-    setNewName(nameWithoutExtension); 
+    setNewName(nameWithoutExtension);
     setRenameModalOpen(true);
   };
   const handleCloseRenameModal = () => {
@@ -309,48 +299,93 @@ const Storage = () => {
       </Typography>
 
       {/* Total Space */}
-      <Paper sx={{ padding: 3, marginBottom: 4, boxShadow: 3 }}>
-        <Typography variant="h6" sx={{ marginBottom: 1 }}>
-          Total Space:
-          <Typography variant="body1" component="b" sx={{ marginLeft: 1 }}>
-            {allData.reduce((acc, file) => acc + file.size, 0) / 1e6} MB
-          </Typography>
-        </Typography>
+      <Paper 
+  sx={{ 
+    padding: 3, 
+    marginBottom: 4, 
+    boxShadow: 3, 
+    borderRadius: 2, 
+    backgroundColor: '#f9f9f9' 
+  }}
+>
+  <Typography 
+    variant="h6" 
+    sx={{ 
+      marginBottom: 2, 
+      fontWeight: 500 
+    }}
+  >
+    Total Space: 
+    <Typography 
+      variant="body1" 
+      component="b" 
+      sx={{ marginLeft: 1, color: '#4caf50' }}
+    >
+      {allData.reduce((acc, file) => acc + file.size, 0) / 1e6} MB
+    </Typography>
+  </Typography>
 
-        {/* Sort By Selector */}
-        <Grid container spacing={2} alignItems="center">
-          <Grid item>
-            <Typography variant="body1">Sort by:</Typography>
-          </Grid>
-          <Grid item>
-            <FormControl variant="outlined" sx={{ minWidth: 120 }}>
-              <InputLabel>Sort By</InputLabel>
-              <Select
-                value={sortBy}
-                onChange={handleSortChange}
-                label="Sort By"
-              >
-                <MenuItem value="size">Size</MenuItem>
-                <MenuItem value="date">Date</MenuItem>
-                <MenuItem value="name">Name</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item>
-            <FormControl variant="outlined" sx={{ minWidth: 120 }}>
-              <InputLabel>Order</InputLabel>
-              <Select
-                value={orderDirection}
-                onChange={handleOrderDirectionChange}
-                label="Order"
-              >
-                <MenuItem value="asc">Ascending</MenuItem>
-                <MenuItem value="desc">Descending</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-      </Paper>
+  <Grid 
+    container 
+    spacing={2} 
+    alignItems="center" 
+    sx={{ marginBottom: 2 }}
+  >
+    <Grid item>
+      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+        Sort by:
+      </Typography>
+    </Grid>
+    <Grid item>
+      <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+        <InputLabel>Sort By</InputLabel>
+        <Select
+          value={sortBy}
+          onChange={handleSortChange}
+          label="Sort By"
+        >
+          <MenuItem value="size">Size</MenuItem>
+          <MenuItem value="date">Date</MenuItem>
+          <MenuItem value="name">Name</MenuItem>
+        </Select>
+      </FormControl>
+    </Grid>
+    <Grid item>
+      <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+        <InputLabel>Order</InputLabel>
+        <Select
+          value={orderDirection}
+          onChange={handleOrderDirectionChange}
+          label="Order"
+        >
+          <MenuItem value="asc">Ascending</MenuItem>
+          <MenuItem value="desc">Descending</MenuItem>
+        </Select>
+      </FormControl>
+    </Grid>
+  </Grid>
+
+  <TextField
+    fullWidth
+    variant="outlined"
+    placeholder="Search by keyword"
+    value={keyword}
+    onChange={(e) => setKeyword(e.target.value)}
+    InputProps={{
+      startAdornment: (
+        <InputAdornment position="start">
+          <SearchIcon />
+        </InputAdornment>
+      ),
+    }}
+    sx={{
+      backgroundColor: '#fff',
+      borderRadius: 1,
+      boxShadow: 1,
+    }}
+  />
+</Paper>
+
 
       {/* Files Section */}
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
@@ -414,10 +449,10 @@ const Storage = () => {
                       {new Date(file.updatedAt).toLocaleDateString()}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                     Total Downloads: {file.totalDownloads}
+                      Total Downloads: {file.totalDownloads}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                     Total Views: {file.totalViews}
+                      Total Views: {file.totalViews}
                     </Typography>
                   </Box>
                 </Box>
@@ -551,47 +586,47 @@ const Storage = () => {
         </DialogActions>
       </Dialog>
 
-      <Dialog open={viewModalOpen} onClose={() => setViewModalOpen(false)} maxWidth="md">
-  <DialogTitle>View File</DialogTitle>
-  <DialogContent>
-    {selectedFile ? (
-      selectedFile.type.startsWith("image") ? (
-        <img
-          src={selectedFile.path}
-          alt="file"
-          style={{ width: "100%", height: "auto" }}
-        />
-      ) : selectedFile.type === "application/pdf" ? (
-        <embed
-          src={selectedFile.path}
-          width="100%"
-          height="500px"
-          type="application/pdf"
-        />
-      ) : selectedFile.type.startsWith("video") ? (
-        <video
-          controls
-          style={{ width: "100%", height: "auto" }}
-        >
-          <source src={selectedFile.path} type={selectedFile.type} />
-          Your browser does not support the video tag.
-        </video>
-      ) : (
-        <Typography variant="body2" color="textSecondary">
-          Cannot preview this file type.
-        </Typography>
-      )
-    ) : (
-      <CircularProgress />
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setViewModalOpen(false)} color="secondary">
-      Close
-    </Button>
-  </DialogActions>
-</Dialog>
-
+      <Dialog
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        maxWidth="md"
+      >
+        <DialogTitle>View File</DialogTitle>
+        <DialogContent>
+          {selectedFile ? (
+            selectedFile.type.startsWith("image") ? (
+              <img
+                src={selectedFile.path}
+                alt="file"
+                style={{ width: "100%", height: "auto" }}
+              />
+            ) : selectedFile.type === "application/pdf" ? (
+              <embed
+                src={selectedFile.path}
+                width="100%"
+                height="500px"
+                type="application/pdf"
+              />
+            ) : selectedFile.type.startsWith("video") ? (
+              <video controls style={{ width: "100%", height: "auto" }}>
+                <source src={selectedFile.path} type={selectedFile.type} />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                Cannot preview this file type.
+              </Typography>
+            )
+          ) : (
+            <CircularProgress />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewModalOpen(false)} color="secondary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -25,17 +25,16 @@ import {
   editFileName,
   fetchFiles,
   deleteFile,
-  shareFile,
-  getFilesSharedByMe,
-  fileView,
   fileDownload,
-} from "../../features/filesSlice"; // Import the deleteFile action
+  fileView,
+} from "../../features/filesSlice";
 import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
+import { adminFileSlice, getUserFiles } from "../../features/adminSlice";
 
-const MyShared = () => {
-  const { type } = useParams();
+const UserFiles = () => {
+  const { userId } = useParams(); 
   const { isDarkMode } = useTheme();
 
   const [allData, setAllData] = useState([]);
@@ -43,25 +42,29 @@ const MyShared = () => {
   const [sortBy, setSortBy] = useState("size");
   const [orderDirection, setOrderDirection] = useState("asc");
   const [page, setPage] = useState(1);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+
+  const [renameModalOpen, setRenameModalOpen] = useState(false);
+  const [renameFileData, setRenameFileData] = useState(null);
+  const [newName, setNewName] = useState("");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
 
   const { refetch, handleRefetch } = useContext(reFetchContext);
-  const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [shareOption, setShareOption] = useState("public");
-  const [emailListArray, setEmailListArray] = useState([""]);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [viewModalOpen, setViewModalOpen] = useState(false);
+
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.files);
 
   const filesPerPage = 10;
 
-  const { loading } = useSelector((state) => state.files);
-  const dispatch = useDispatch();
-
-  // Fetch Files
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await dispatch(getFilesSharedByMe());
-        console.log(response.payload.data);
+        const response = await dispatch(
+          getUserFiles({ userId, sortBy, orderDirection })
+        );
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
       } catch (error) {
@@ -69,9 +72,21 @@ const MyShared = () => {
       }
     };
     fetchData();
-  }, [type, sortBy, orderDirection, dispatch, refetch]);
+  }, [sortBy, orderDirection, dispatch, refetch]);
 
-  // Handle Sorting Changes
+  const dropdownOptions = (file) => [
+    { label: "View", onClick: () => handleView(file) },
+    { label: "Download", onClick: () => handleDownload(file) },
+    { label: "Rename", onClick: () => handleOpenRenameModal(file) },
+    {
+      label: "Delete",
+      onClick: () => {
+        setFileToDelete(file);
+        setDeleteModalOpen(true);
+      },
+    }, // Add Delete option
+  ];
+
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
@@ -84,125 +99,104 @@ const MyShared = () => {
     setPage(value);
   };
 
-
-
   const paginatedFiles = filteredFiles.slice(
     (page - 1) * filesPerPage,
     page * filesPerPage
   );
 
+  const handleCloseRenameModal = () => {
+    setRenameModalOpen(false);
+    setRenameFileData(null);
+    setNewName("");
+  };
+
   const handleView = async (file) => {
     setSelectedFile(file);
     setViewModalOpen(true);
+    console.log(file)
 
-    const res = await dispatch(fileView(file?.file?.id));
+
+    const res = await dispatch(fileView(file.id))
     if (res.payload?.success) {
-      toast.success(`${file?.file?.name} opened`);
+      toast.success(`${file.name} opened`);
     }
+
   };
 
+  const handleOpenRenameModal = (file) => {
+    setRenameFileData(file);
+    const nameWithoutExtension = file.name.substring(
+      0,
+      file.name.lastIndexOf(".")
+    ); 
+    const extension = file.name.substring(file.name.lastIndexOf("."));
+    setNewName(nameWithoutExtension); 
+    setRenameModalOpen(true);
+  };
   const handleDownload = async (file) => {
     try {
-      const response = await fetch(file?.file.path);
-      const blob = await response.blob(); 
+      const response = await fetch(file.path);
+      const blob = await response.blob();
 
       const blobUrl = URL.createObjectURL(blob);
-
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = file?.file?.name; 
+      link.download = file.name;
       document.body.appendChild(link);
-
       link.click();
-
       document.body.removeChild(link);
       URL.revokeObjectURL(blobUrl);
-      const res = await dispatch(fileDownload(file?.file?.id));
 
+      const res = await dispatch(fileDownload(file.id));
       if (res.payload?.success) {
-        toast.success(`${file.file.name} downloaded successfully`);
+        toast.success(`${file.name} downloaded successfully`);
       }
-
     } catch (error) {
-      toast.error(`Failed to download ${file?.file?.name}`);
-      console.error(error);
+      toast.error(`Failed to download ${file.name}`);
     }
   };
 
-  const handleShare = async (file) => {
-    setSelectedFile(file);
-    setShareModalOpen(true);
-    if (file.file.fileShares && file.file.fileShares.length > 0) {
-      setEmailListArray(file.file.fileShares.map((share) => share.email));
-    } else {
-      setEmailListArray([""]);
-    }
-  };
-
-  const handleShareFile = async () => {
-    const validEmails = emailListArray.filter((email) =>
-      validateEmail(email.trim())
-    );
-
-    if (shareOption === "shared" && validEmails.length === 0) {
-      toast.error("Please enter at least one valid email.");
+  const handleRenameFile = async () => {
+    if (!newName.trim()) {
+      toast.error("Name cannot be empty");
       return;
     }
 
-    const shareData = {
-      fileId: selectedFile.file.id,
-      visibility:
-        shareOption === "public"
-          ? "PUBLIC"
-          : shareOption === "shared"
-          ? "SHARED"
-          : "PRIVATE",
-      emails: shareOption === "shared" ? validEmails : [],
-    };
+    const fileExtension = renameFileData.name.substring(
+      renameFileData.name.lastIndexOf(".")
+    );
+    const newFileName = `${newName}${fileExtension}`;
 
     try {
-      const result = await dispatch(shareFile(shareData));
-
-      if (shareData.visibility === "PRIVATE") {
+      const response = await dispatch(
+        editFileName({ fileId: renameFileData.id, newName: newFileName })
+      );
+      if (response.payload?.success) {
+        toast.success("File renamed successfully");
         handleRefetch();
-      }
-      if (result?.payload?.success) {
-        toast.success(
-          shareOption === "public"
-            ? "File shared publicly!"
-            : shareOption === "shared"
-            ? "File shared with specific users!"
-            : "File set to private!"
-        );
-      } else {
-        toast.error("Failed to share file");
+        setRenameModalOpen(false);
       }
     } catch (error) {
-      toast.error("Failed to share file");
-    } finally {
-      setShareModalOpen(false);
+      toast.error(error.message || "Failed to rename file");
     }
   };
 
-  const dropdownOptions = (file) => [
-    { label: "View", onClick: () => handleView(file) },
-    { label: "Download", onClick: () => handleDownload(file) },
-    { label: "Share", onClick: () => handleShare(file) },
-  ];
-
-  const handleAddEmail = () => {
-    setEmailListArray([...emailListArray, ""]);
-  };
-  const validateEmail = (email) => {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(email);
-  };
-  const handleRemoveEmail = (index) => {
-    const newEmailList = emailListArray.filter((_, i) => i !== index);
-    setEmailListArray(newEmailList);
+  const handleDeleteFile = async () => {
+    try {
+      const response = await dispatch(adminFileSlice(fileToDelete.id));
+      if (response.payload?.success) {
+        toast.success("File deleted successfully");
+        setFilteredFiles((prev) =>
+          prev.filter((file) => file.id !== fileToDelete.id)
+        );
+        setDeleteModalOpen(false);
+      }
+    } catch (error) {
+      toast.error("Failed to delete file");
+    }
   };
 
-  return (
+     return (
     <Box sx={{ padding: 4 }}>
       {/* Heading */}
       <Typography
@@ -211,7 +205,7 @@ const MyShared = () => {
         component="h1"
         sx={{ marginBottom: 2 }}
       >
-        {type}
+        Files
       </Typography>
 
       {/* Total Space */}
@@ -219,7 +213,7 @@ const MyShared = () => {
         <Typography variant="h6" sx={{ marginBottom: 1 }}>
           Total Space:
           <Typography variant="body1" component="b" sx={{ marginLeft: 1 }}>
-            {allData.reduce((acc, file) => acc + file.file.size, 0) / 1e6} MB
+            {allData.reduce((acc, file) => acc + file.size, 0) / 1e6} MB
           </Typography>
         </Typography>
 
@@ -290,7 +284,7 @@ const MyShared = () => {
                   boxShadow: 6,
                 },
               }}
-              key={file.file.id}
+              key={file.id}
             >
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Box sx={{ display: "flex", gap: 2 }}>
@@ -310,14 +304,20 @@ const MyShared = () => {
                   </div>
                   <Box>
                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                      {file?.file.name}
+                      {file.name}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      {(file?.file.size / 1e6).toFixed(2)} MB
+                      {(file.size / 1e6).toFixed(2)} MB
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                      {new Date(file.sharedAt).toLocaleTimeString()},{" "}
+                      {new Date(file.updatedAt).toLocaleTimeString()},{" "}
                       {new Date(file.updatedAt).toLocaleDateString()}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                     Total Downloads: {file.totalDownloads}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                     Total Views: {file.totalViews}
                     </Typography>
                   </Box>
                 </Box>
@@ -342,114 +342,95 @@ const MyShared = () => {
         />
       </Box>
 
-      <Dialog open={shareModalOpen} onClose={() => setShareModalOpen(false)}>
-        <DialogTitle>Share File</DialogTitle>
+      {/* Rename Modal */}
+      <Dialog open={renameModalOpen} onClose={handleCloseRenameModal}>
+        <DialogTitle>Rename File</DialogTitle>
         <DialogContent>
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Visibility</label>
-              <select
-                value={shareOption}
-                onChange={(e) => setShareOption(e.target.value)}
-                className={`w-full px-3 py-2 border outline-none rounded-md ${
-                  isDarkMode ? "bg-[#333] text-white" : "bg-white text-black"
-                }`}
-              >
-                <option value="public">Public</option>
-                <option value="shared">Shared with Specific Users</option>
-                <option value="private">Private</option>
-              </select>
-            </div>
-            {shareOption === "shared" && (
-              <div>
-                <label className="text-sm font-medium">Emails</label>
-                {emailListArray.map((email, index) => (
-                  <div key={index} className="flex gap-2 py-2 items-center">
-                    <TextField
-                      label="Email"
-                      variant="outlined"
-                      size="small"
-                      value={email}
-                      onChange={(e) => {
-                        const newEmails = [...emailListArray];
-                        newEmails[index] = e.target.value;
-                        setEmailListArray(newEmails);
-                      }}
-                      sx={{ backgroundColor: isDarkMode ? "#444" : "#fff" }}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveEmail(index)}
-                      className="text-red-500"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={handleAddEmail}
-                  className="text-blue-500"
-                >
-                  Add Email
-                </button>
-              </div>
-            )}
-          </div>
+          <TextField
+            autoFocus
+            fullWidth
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            label="New File Name"
+            sx={{
+              marginBottom: 2,
+              marginTop: 2,
+            }}
+          />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShareModalOpen(false)} color="secondary">
+          <Button onClick={handleCloseRenameModal} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleShareFile} color="primary">
-            Share
+          <Button onClick={handleRenameFile} color="primary">
+            Rename
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        open={viewModalOpen}
-        onClose={() => setViewModalOpen(false)}
-        maxWidth="md"
-      >
-        <DialogTitle>View File</DialogTitle>
+      {/* Delete Confirmation Modal */}
+      <Dialog open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
+        <DialogTitle>Delete File</DialogTitle>
         <DialogContent>
-          {selectedFile ? (
-            selectedFile.file.type.startsWith("image") ? (
-              <img
-                src={selectedFile.path}
-                alt="file"
-                style={{ width: "100%", height: "auto" }}
-              />
-            ) : selectedFile.type === "application/pdf" ? (
-              <embed
-                src={selectedFile.path}
-                width="100%"
-                height="500px"
-                type="application/pdf"
-              />
-            ) : selectedFile.type.startsWith("video") ? (
-              <video controls style={{ width: "100%", height: "auto" }}>
-                <source src={selectedFile.path} type={selectedFile.type} />
-                Your browser does not support the video tag.
-              </video>
-            ) : (
-              <Typography variant="body2" color="textSecondary">
-                Cannot preview this file type.
-              </Typography>
-            )
-          ) : (
-            <CircularProgress />
-          )}
+          <Typography variant="body1">
+            Are you sure you want to delete this file? This action cannot be
+            undone.
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setViewModalOpen(false)} color="secondary">
-            Close
+          <Button onClick={() => setDeleteModalOpen(false)} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleDeleteFile} color="primary">
+            Delete
           </Button>
         </DialogActions>
       </Dialog>
+    
+
+      <Dialog open={viewModalOpen} onClose={() => setViewModalOpen(false)} maxWidth="md">
+  <DialogTitle>View File</DialogTitle>
+  <DialogContent>
+    {selectedFile ? (
+      selectedFile.type.startsWith("image") ? (
+        <img
+          src={selectedFile.path}
+          alt="file"
+          style={{ width: "100%", height: "auto" }}
+        />
+      ) : selectedFile.type === "application/pdf" ? (
+        <embed
+          src={selectedFile.path}
+          width="100%"
+          height="500px"
+          type="application/pdf"
+        />
+      ) : selectedFile.type.startsWith("video") ? (
+        <video
+          controls
+          style={{ width: "100%", height: "auto" }}
+        >
+          <source src={selectedFile.path} type={selectedFile.type} />
+          Your browser does not support the video tag.
+        </video>
+      ) : (
+        <Typography variant="body2" color="textSecondary">
+          Cannot preview this file type.
+        </Typography>
+      )
+    ) : (
+      <CircularProgress />
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setViewModalOpen(false)} color="secondary">
+      Close
+    </Button>
+  </DialogActions>
+</Dialog>
+
     </Box>
   );
 };
 
-export default MyShared;
+export default UserFiles;

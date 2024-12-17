@@ -16,3 +16,67 @@ export const getAllUsers = createAsyncThunk("/admin/users", async (_,{rejectWith
     }
 
 })
+
+export const getUserDetail = createAsyncThunk("getUserDetail", async( userId, {rejectWithValue})=>{
+    try {
+        const res = await axios.get(`${baseApi}/admin/user/${userId}`, {
+            withCredentials: true,
+        })
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+})
+
+export const updateUserProfile= createAsyncThunk("updateUserProfile", async (data, {rejectWithValue})=>{
+    try {
+        const res = await axios.put(`${baseApi}/admin/user/${data.userId}`, data, {
+            withCredentials: true,
+        })
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+})
+
+export const getUserFiles = createAsyncThunk("getUserFiles",async(data, {rejectWithValue})=>{
+    try {
+        console.log("data is ", data)
+        const userId = data.userId;
+        const res = await axios.get(`${baseApi}/admin/files`, {
+            params:{
+                userId: userId,
+                orderBy: data.sortBy,
+                orderDirection: data.orderDirection,
+            },
+            withCredentials: true,
+        })
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+
+    }
+})
+
+export const adminFileSlice = createAsyncThunk("deleteFile", async(fileId,{rejectWithValue})=>{
+    try {
+        const res = await axios.delete(`${baseApi}/admin/file/${fileId}`, {
+            withCredentials: true,
+        })
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+})
+
+
+export const deleteUserProfile = createAsyncThunk("deleteUserProfile", async(userId, {rejectWithValue})=>{
+    try {
+        const res = await axios.delete(`${baseApi}/admin/user/${userId}`, {
+            withCredentials: true,
+        })
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+})

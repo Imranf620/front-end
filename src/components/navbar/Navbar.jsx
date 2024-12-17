@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useCallback } from "react";
 import {
   AppBar,
   Toolbar,
@@ -24,7 +24,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchMyProfile, logout } from "../../features/userSlice";
 import { uploadFile } from "../../features/filesSlice";
 import { reFetchContext } from "../../context/ReFetchContext";
-import axios from "axios";  // Ensure axios is imported
+
+import axios from "axios"; // Ensure axios is imported
 
 const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   const { loading, user } = useSelector((state) => state.auth);
@@ -38,17 +39,18 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   const { handleRefetch } = useContext(reFetchContext);
   const navigate = useNavigate();
   const baseApi = import.meta.env.VITE_API_URL;
-  console.log("user", user)
 
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleMenuClick = (event) => {
+  const handleMenuClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
     setMenuOpen(true);
-  };
+  }, []);
 
   const handleMenuClose = () => {
     setMenuOpen(false);
   };
+  
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -67,7 +69,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
     const file = event.target.files[0];
     setSelectedFile(file);
     setOpenDialog(true);
-    console.log("file", file)
+    console.log("file", file);
   };
 
   const handleConfirmUpload = async () => {
@@ -75,27 +77,34 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
       toast.error("No file selected!");
       return;
     }
-    
+
     setUploadProgress(0); // Reset progress
     const formData = new FormData();
     formData.append("file", selectedFile);
-
+    setUploadProgress(0);
+    setIsUploading(true);
     try {
       // Step 1: Get presigned URL from backend
-      const response = await axios.post(`${baseApi}/pre-ass-url`, {
-        fileName: selectedFile.name,
-        fileType: selectedFile.type,
-      }, { withCredentials: true });
+      const response = await axios.post(
+        `${baseApi}/pre-ass-url`,
+        {
+          fileName: selectedFile.name,
+          fileType: selectedFile.type,
+        },
+        { withCredentials: true }
+      );
 
       const { url, downloadUrl } = response.data;
 
       // Step 2: Upload the file to S3
       const uploadResponse = await axios.put(url, selectedFile, {
         headers: {
-          'Content-Type': selectedFile.type,
+          "Content-Type": selectedFile.type,
         },
         onUploadProgress: (progressEvent) => {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
           setUploadProgress(percent); // Update progress
         },
       });
@@ -104,7 +113,14 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
       formData.append("downloadUrl", downloadUrl);
 
       // Step 4: Upload file info to backend
-      const result = await dispatch(uploadFile({name:selectedFile.name, size:selectedFile.size, type:selectedFile.type, path:downloadUrl}));
+      const result = await dispatch(
+        uploadFile({
+          name: selectedFile.name,
+          size: selectedFile.size,
+          type: selectedFile.type,
+          path: downloadUrl,
+        })
+      );
       console.log("result", result);
 
       if (result.payload?.success) {
@@ -114,12 +130,12 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
       } else {
         toast.error(result.payload.message);
       }
-
     } catch (error) {
       toast.error("Error uploading file: " + error.message);
     } finally {
-      setUploadProgress(0); // Reset progress after the upload attempt
-      setOpenDialog(false);  // Close the dialog after the upload is complete
+      setUploadProgress(0);
+      setIsUploading(false);
+      setOpenDialog(false);
     }
   };
 
@@ -128,10 +144,18 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
     setOpenDialog(false);
   };
 
-  // Close the menu when the user navigates to a new route
   useEffect(() => {
-    setMenuOpen(false); // Close menu on route change
+    setMenuOpen(false);
   }, [location]);
+
+
+  const handleProfileClick= ()=>{
+    navigate(`/profile`);
+  }
+
+  const handlePackageClick =()=>{
+    navigate(`/packages`);
+  }
 
   return (
     <AppBar position="sticky" color="secondary">
@@ -139,36 +163,35 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
         <Typography variant="h6">Storify</Typography>
 
         <div className="flex items-center gap-4">
-          <Tooltip title="Upload File">
+          { user?.user?.role==="USER" && <Tooltip title="Upload File">
             <Button
               variant="contained"
               color="secondary"
               startIcon={<CloudUpload />}
               component="label"
-             
             >
               Upload
               <input type="file" hidden onChange={handleFileChange} />
             </Button>
-          </Tooltip>
+          </Tooltip>}
 
           {/* Loader/Progress Bar */}
-          {loading && (
+
+          {isUploading && (
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <CircularProgress size={20} />
-              {uploadProgress > 0 && (
-                <LinearProgress
-                  variant="determinate"
-                  value={uploadProgress}
-                  style={{ width: "100px" }}
-                />
-              )}
+              <CircularProgress size={20} color="primary" />
+              <Typography
+                variant="subtitle1"
+                style={{  color: "#fff" }}
+              >
+                Uploading... {uploadProgress}%
+              </Typography>
             </div>
           )}
 
           <Tooltip title="User Profile">
             <IconButton onClick={handleMenuClick} color="inherit">
-              <Avatar alt="User" src={user?.user?.image}/>
+              <Avatar alt="User" src={user?.user?.image} />
             </IconButton>
           </Tooltip>
 
@@ -177,32 +200,33 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
             open={menuOpen}
             onClose={handleMenuClose}
             PaperProps={{
-              style: { backgroundColor: isDarkMode ? "#424242" : "#9C27B0", color: "#ffffff" },
+              style: {
+                backgroundColor: isDarkMode ? "#424242" : "#9C27B0",
+                color: "#ffffff",
+              },
             }}
           >
-            <Link to="/profile">
-              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-            </Link>
-            <Link to="/packages">
-              <MenuItem onClick={handleMenuClose}>Subscriptions</MenuItem>
-            </Link>
-            <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
+              <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+              <MenuItem onClick={handlePackageClick}>Subscriptions</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
 
           <Tooltip title={isDarkMode ? "Light Mode" : "Dark Mode"}>
+            <>
             <IconButton onClick={toggleDarkMode} color="inherit">
               {isDarkMode ? <Brightness7 /> : <Brightness4 />}
             </IconButton>
-            <div className="md:hidden">
+            <div className="lg:hidden">
               <MenuIcon onClick={handleToggle} />
             </div>
+          </>
           </Tooltip>
+
         </div>
       </Toolbar>
 
       {/* Confirmation Dialog */}
-      <Dialog open={openDialog} onClose={handleCancelUpload}>
+      <Dialog open={openDialog && !isUploading} onClose={handleCancelUpload}>
         <DialogTitle>Confirm File Upload</DialogTitle>
         <DialogContent>
           <Typography>
@@ -223,4 +247,4 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   );
 };
 
-export default Navbar;
+export default React.memo(Navbar);

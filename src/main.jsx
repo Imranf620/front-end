@@ -10,7 +10,11 @@ import { Provider } from "react-redux";
 import ReFetchState from "./context/ReFetchContext.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
+  <BrowserRouter 
+  future={{
+    v7_startTransition: true,
+    v7_relativeSplatPath: true 
+  }}>
     <ThemeProvider>
       <Provider store={store}>
         <ReFetchState>

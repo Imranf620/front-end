@@ -4,13 +4,14 @@ const baseApi = import.meta.env.VITE_API_URL;
 
 export const fetchFiles = createAsyncThunk(
   "/files/fetch",
-  async ({ type, sortBy, orderDirection }, { rejectWithValue }) => {
+  async ({ type, sortBy, orderDirection,keyword }, { rejectWithValue }) => {
     try {
       console.log(type);
-      const res = await axios.get(`${baseApi}/files/get/${type}`, {
+      const res = await axios.get(`${baseApi}/files/get/${type}?keyword=${keyword}`, {
         params: {
             orderBy: sortBy,
             orderDirection: orderDirection,
+            
           },
           withCredentials:true
       });
@@ -82,7 +83,6 @@ export const uploadFile = createAsyncThunk(
       const res = await axios.post(`${baseApi}/files/share`, data, {
         withCredentials: true,
       });
-      console.log("res", res)
       return res.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -157,6 +157,35 @@ export const uploadFile = createAsyncThunk(
     }
   })
 
+  export const uploadGuestFile = createAsyncThunk("/uploadGuestFile", async(data,{rejectWithValue})=>{
+    try {
+      console.log("Uploading", data)
+      const res = await axios.post(`${baseApi}/files/guest/upload`, {
+        name:data.selectedFile.name,
+        size:data.selectedFile.size,
+        type:data.selectedFile.type,
+        path:data.publicUrl
+      }, {
+        withCredentials: true
+      })
+      console.log("res", res)
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  })
+
+
+  export const getGuestFile = createAsyncThunk("/guest/file", async(fileId,{rejectWithValue})=>{
+    try {
+      const res = await axios.get(`${baseApi}/files/guest/${fileId}`, {
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  })
 
 const initialState = {
   loading: false,

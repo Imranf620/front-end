@@ -7,6 +7,8 @@ import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signUp } from "../../features/userSlice";
+import HomeNav from "../../components/homeNav/HomeNav";
+import Footer from "../../components/footer/Footer";
 
 const SignUp = () => {
   const { user, response } = useSelector((state) => state.auth);
@@ -51,6 +53,8 @@ const SignUp = () => {
   }, [response, user]);
 
   return (
+    <>
+    <HomeNav/>
     <div className="w-full h-full bg-red-300  flex">
       <section className="md:w-1/2 w-full h-auto md:h-auto flex flex-col justify-center items-center bg-gray-50 p-10">
         <div className="w-3/4 max-w-md flex flex-col gap-6">
@@ -153,6 +157,9 @@ const SignUp = () => {
         />
       </section>
     </div>
+    <Footer/>
+    </>
+
   );
 };
 

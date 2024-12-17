@@ -20,18 +20,19 @@ const SingleFile = React.lazy(() => import("./pages/SingleFile/SingleFile.jsx"))
 const MyShared = React.lazy(() => import("./pages/MyShared/MyShared.jsx"));
 const AdminDashboard = React.lazy(() => import("./pages/AdminDashboard/AdminDashboard.jsx"));
 const AllUsers = React.lazy(() => import("./pages/AllUsers/AllUsers.jsx"));
-
-
+const UserFiles = React.lazy(() => import("./pages/UserFiles/UserFiles.jsx"));
+const UserProfile = React.lazy(() => import("./pages/UserProfile/UserProfile.jsx"));
+const HomePage = React.lazy(() => import("./pages/HomePage/HomePage.jsx"));
+const Pricing = React.lazy(() => import("./pages/Pricing/Pricing.jsx"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
-
 
 const App = () => {
   const { user } = useSelector((state) => state.auth);
-
   const dispatch = useDispatch();
+
   useEffect(() => {
     dispatch(fetchMyProfile());
-  }, []);
+  }, [dispatch]);
 
   return (
     <Suspense fallback={<Loader />}>
@@ -40,7 +41,12 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/home/:fileId" element={<HomePage />} />
+        <Route path="/home" element={<HomePage />} />
+        
+        <Route path="/pricing" element={<Pricing />} />
 
+        {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
             <Route path="" element={<Dashboard />} />
@@ -52,12 +58,15 @@ const App = () => {
             <Route path="dashboard/shared/:id" element={<SingleFile />} />
             <Route path="dashboard/bin/all" element={<Bin />} />
 
+            {/* Admin Routes */}
             <Route element={<AdminRoute />}>
-          <Route path="/admin/users" element={<AllUsers />} /> 
+              <Route path="/admin/users" element={<AllUsers />} />
+              <Route path="/admin/files" element={<UserFiles />} />
+              <Route path="/admin/user/:userId" element={<UserProfile />} />
+            </Route>
+          </Route>
         </Route>
 
-          </Route>  
-        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
