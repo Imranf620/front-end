@@ -104,6 +104,7 @@ const AllUsers = () => {
                         <TableRow>
                             <TableCell>Name</TableCell>
                             <TableCell>Email</TableCell>
+                            <TableCell>Files</TableCell>
                             <TableCell>Subscription</TableCell>
                             <TableCell>Storage</TableCell>
                             <TableCell>Status</TableCell>
@@ -112,13 +113,15 @@ const AllUsers = () => {
                     </TableHead>
                     <TableBody>
                         {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(user => {
-                            const remainingDays = calculateRemainingDays(user.subscribedAt, user.validDays);
+                            const remainingDays = calculateRemainingDays(user.subscribedAt, user.validDays)>0 ? calculateRemainingDays(user.subscribedAt, user.validDays):0
                             const storageUsed = calculateStorageUsage(user.files);
                             const totalStorage = user.totalStorage;
                             return (
                                 <TableRow key={user.id}>
                                     <TableCell>{user.name}</TableCell>
                                     <TableCell>{user.email}</TableCell>
+                                    <TableCell>{user.files.length}</TableCell>
+
                                     <TableCell>{remainingDays} days remaining</TableCell>
                                     <TableCell>{storageUsed} GB used / {totalStorage} GB</TableCell>
                                     <TableCell>

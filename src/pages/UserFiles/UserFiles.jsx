@@ -65,6 +65,7 @@ const UserFiles = () => {
         const response = await dispatch(
           getUserFiles({ userId, sortBy, orderDirection })
         );
+        console.log(response.payload.data);
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
       } catch (error) {
@@ -318,6 +319,9 @@ const UserFiles = () => {
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
                      Total Views: {file.totalViews}
+                    </Typography>
+                    <Typography variant="body2" color="textSecondary">
+                     user: {file?.user?.email}
                     </Typography>
                   </Box>
                 </Box>

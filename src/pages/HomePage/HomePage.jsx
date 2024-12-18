@@ -9,6 +9,7 @@ import {
   Dialog,
   FormControl,
   FormControlLabel,
+  LinearProgress,
   Radio,
   RadioGroup,
   TextField,
@@ -31,8 +32,11 @@ const HomePage = () => {
   const [email, setEmail] = useState("");
   const [customUrl, setCustomUrl] = useState("");
   const [emails, setEmails] = useState([""]);
+  const [loading, setLoading] = useState(false);
   const baseApi = import.meta.env.VITE_API_URL;
   const dispatch = useDispatch()
+  const [progress, setProgress] = useState(0);
+
 
   const {fileId} = useParams()
 
@@ -82,6 +86,8 @@ const HomePage = () => {
   const handleShare = async () => {
 
     let fileId ;
+    setLoading(true);
+    
     
     try {
       const response = await axios.post(
@@ -94,23 +100,34 @@ const HomePage = () => {
       );
 
       const { url, downloadUrl , publicUrl} = response.data;
+      setIsShareDialogOpen(false);
    
       const uploadResponse = await axios.put(url, selectedFile, {
         headers: {
           "Content-Type": selectedFile.type,
         },
+        onUploadProgress: (progressEvent) => {
+          const { loaded, total } = progressEvent;
+          const progressPercentage = Math.round((loaded * 100) / total);
+          setProgress(progressPercentage); 
+        },
 
       });
       if (uploadResponse.status === 200) {
         let res  =  await dispatch(uploadGuestFile({selectedFile, downloadUrl,publicUrl}))
-        
+        setProgress(0);
+        setIsShareDialogOpen(false);
         fileId= res.payload.data.id
         if(res.payload.success==false) {
           toast.error(res.payload.message)
           return
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      setProgress(0);
+    } finally{
+      setLoading(false);
+    }
 
   
 
@@ -280,6 +297,12 @@ const HomePage = () => {
             </p>
           )}
           <p className="text-sm text-gray-500 mt-2">(Max file size: 15 GB)</p>
+          {progress > 0 && (
+          <div className="mt-4">
+            <LinearProgress variant="determinate" value={progress} />
+            <p className="text-center text-sm mt-2">{progress}%</p>
+          </div>
+        )}
         </div>
 
         <div className="relative mx-auto w-[80%] hero-img">
@@ -350,9 +373,9 @@ const HomePage = () => {
               variant="contained"
               color="primary"
               onClick={handleShare}
-              disabled={!selectedFile}
+              disabled={!selectedFile || loading} 
             >
-              Share
+                {loading ? 'Generating URL...' : 'Share'}
             </Button>
           </div>
         </div>
