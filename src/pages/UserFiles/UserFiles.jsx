@@ -17,6 +17,8 @@ import {
   DialogTitle,
   TextField,
   Button,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
@@ -31,10 +33,10 @@ import {
 import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
-import { adminFileSlice, getUserFiles } from "../../features/adminSlice";
+import { adminFileDelete, getUserFiles } from "../../features/adminSlice";
 
 const UserFiles = () => {
-  const { userId } = useParams(); 
+  const { userId } = useParams();
   const { isDarkMode } = useTheme();
 
   const [allData, setAllData] = useState([]);
@@ -44,13 +46,14 @@ const UserFiles = () => {
   const [page, setPage] = useState(1);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
-
+  const [selectedFiles, setSelectedFiles] = useState([]);
 
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [renameFileData, setRenameFileData] = useState(null);
   const [newName, setNewName] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState(null);
+  const [fileToDelete, setFileToDelete] = useState([]);
+  const [selectFile, setSelectFile] = useState(false)
 
   const { refetch, handleRefetch } = useContext(reFetchContext);
 
@@ -82,7 +85,12 @@ const UserFiles = () => {
     {
       label: "Delete",
       onClick: () => {
-        setFileToDelete(file);
+        setFileToDelete((prev) => {
+          if (!prev.some((existingFile) => existingFile === file.id)) {
+            return [...prev, file.id];
+          }
+          return prev;
+        });
         setDeleteModalOpen(true);
       },
     }, // Add Delete option
@@ -114,14 +122,12 @@ const UserFiles = () => {
   const handleView = async (file) => {
     setSelectedFile(file);
     setViewModalOpen(true);
-    console.log(file)
+    console.log(file);
 
-
-    const res = await dispatch(fileView(file.id))
+    const res = await dispatch(fileView(file.id));
     if (res.payload?.success) {
       toast.success(`${file.name} opened`);
     }
-
   };
 
   const handleOpenRenameModal = (file) => {
@@ -129,9 +135,9 @@ const UserFiles = () => {
     const nameWithoutExtension = file.name.substring(
       0,
       file.name.lastIndexOf(".")
-    ); 
+    );
     const extension = file.name.substring(file.name.lastIndexOf("."));
-    setNewName(nameWithoutExtension); 
+    setNewName(nameWithoutExtension);
     setRenameModalOpen(true);
   };
   const handleDownload = async (file) => {
@@ -181,23 +187,43 @@ const UserFiles = () => {
       toast.error(error.message || "Failed to rename file");
     }
   };
+  const handleFileSelect = (fileId) => {
+    setSelectedFiles((prevSelectedFiles) => {
+      if (prevSelectedFiles.includes(fileId)) {
+        return prevSelectedFiles.filter((id) => id !== fileId);
+      } else {
+        return [...prevSelectedFiles, fileId];
+      }
+    });
+  };
 
-  const handleDeleteFile = async () => {
+  const handleSelectAll = () => {
+    setSelectFile(true)
+    if (selectedFiles.length === filteredFiles.length) {
+      setSelectedFiles([]);
+    } else {
+      setSelectedFiles(filteredFiles.map((file) => file.id));
+    }
+  };
+  const handleDeleteFiles = async () => {
     try {
-      const response = await dispatch(adminFileSlice(fileToDelete.id));
+      const response = await dispatch(adminFileDelete(selectedFiles));
       if (response.payload?.success) {
-        toast.success("File deleted successfully");
+        toast.success("Files deleted successfully");
         setFilteredFiles((prev) =>
-          prev.filter((file) => file.id !== fileToDelete.id)
+          prev.filter((file) => !selectedFiles.includes(file.id))
         );
         setDeleteModalOpen(false);
+        setSelectedFiles([]);
+      } else {
+        toast.error(response.payload?.message || "Failed to delete files");
       }
     } catch (error) {
-      toast.error("Failed to delete file");
+      toast.error("Failed to delete files");
     }
   };
 
-     return (
+  return (
     <Box sx={{ padding: 4 }}>
       {/* Heading */}
       <Typography
@@ -257,6 +283,33 @@ const UserFiles = () => {
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
         Files:
       </Typography>
+      <div>
+
+
+      <Button
+        variant="outlined"
+        onClick={handleSelectAll}
+        sx={{ marginBottom: 2 }}
+      >
+        {selectedFiles.length === filteredFiles.length
+          ? "Deselect All"
+          : "Select All"}
+      </Button>
+      <Button
+        variant="outlined"
+        sx={{ marginBottom: 2, marginLeft:"10px" }}
+        onClick={()=>{
+          setSelectFile(!selectFile)
+          setSelectedFiles([])
+        }}
+      >
+        {selectFile
+          ? "Deselect "
+          : "Select "}
+      </Button>
+      </div>
+
+
       {loading ? (
         <Box
           sx={{
@@ -269,7 +322,7 @@ const UserFiles = () => {
           <CircularProgress />
         </Box>
       ) : filteredFiles.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ">
           {paginatedFiles.map((file) => (
             <Paper
               sx={{
@@ -281,14 +334,40 @@ const UserFiles = () => {
                 flexDirection: "column",
                 justifyContent: "space-between",
                 transition: "0.3s ease",
+                position:"relative",
                 "&:hover": {
                   boxShadow: 6,
                 },
               }}
               key={file.id}
-            >
+            > 
+         { selectFile &&  <FormControlLabel
+            sx={{
+              position: "absolute",
+              bottom:"10px",
+              right:"10px",
+              cursor:"pointer",
+              zIndex:"100"
+            }}
+            control={
+              <Checkbox
+                checked={selectedFiles.includes(file.id)}
+                onChange={() => handleFileSelect(file.id)}
+                sx={{
+                  color: "primary.main",
+                 
+                  "&.Mui-checked": {
+                    color: "primary.main",
+                  },
+                }}
+              />
+            }
+            label=""
+          />}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                
                 <Box sx={{ display: "flex", gap: 2 }}>
+                 
                   <div
                     style={{
                       width: "50px",
@@ -315,13 +394,13 @@ const UserFiles = () => {
                       {new Date(file.updatedAt).toLocaleDateString()}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                     Total Downloads: {file.totalDownloads}
+                      Total Downloads: {file.totalDownloads}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                     Total Views: {file.totalViews}
+                      Total Views: {file.totalViews}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
-                     user: {file?.user?.email}
+                      user: {file?.user?.email}
                     </Typography>
                   </Box>
                 </Box>
@@ -374,65 +453,70 @@ const UserFiles = () => {
 
       {/* Delete Confirmation Modal */}
       <Dialog open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
-        <DialogTitle>Delete File</DialogTitle>
+        <DialogTitle>Delete Files</DialogTitle>
         <DialogContent>
           <Typography variant="body1">
-            Are you sure you want to delete this file? This action cannot be
+            Are you sure you want to delete these files? This action cannot be
             undone.
           </Typography>
+          <ul>
+            {selectedFiles.map((fileId) => {
+              const file = filteredFiles.find((f) => f.id === fileId);
+              return <li key={fileId}>{file?.name}</li>;
+            })}
+          </ul>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteModalOpen(false)} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleDeleteFile} color="primary">
+          <Button onClick={handleDeleteFiles} color="primary">
             Delete
           </Button>
         </DialogActions>
       </Dialog>
-    
 
-      <Dialog open={viewModalOpen} onClose={() => setViewModalOpen(false)} maxWidth="md">
-  <DialogTitle>View File</DialogTitle>
-  <DialogContent>
-    {selectedFile ? (
-      selectedFile.type.startsWith("image") ? (
-        <img
-          src={selectedFile.path}
-          alt="file"
-          style={{ width: "100%", height: "auto" }}
-        />
-      ) : selectedFile.type === "application/pdf" ? (
-        <embed
-          src={selectedFile.path}
-          width="100%"
-          height="500px"
-          type="application/pdf"
-        />
-      ) : selectedFile.type.startsWith("video") ? (
-        <video
-          controls
-          style={{ width: "100%", height: "auto" }}
-        >
-          <source src={selectedFile.path} type={selectedFile.type} />
-          Your browser does not support the video tag.
-        </video>
-      ) : (
-        <Typography variant="body2" color="textSecondary">
-          Cannot preview this file type.
-        </Typography>
-      )
-    ) : (
-      <CircularProgress />
-    )}
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setViewModalOpen(false)} color="secondary">
-      Close
-    </Button>
-  </DialogActions>
-</Dialog>
-
+      <Dialog
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        maxWidth="md"
+      >
+        <DialogTitle>View File</DialogTitle>
+        <DialogContent>
+          {selectedFile ? (
+            selectedFile.type.startsWith("image") ? (
+              <img
+                src={selectedFile.path}
+                alt="file"
+                style={{ width: "100%", height: "auto" }}
+              />
+            ) : selectedFile.type === "application/pdf" ? (
+              <embed
+                src={selectedFile.path}
+                width="100%"
+                height="500px"
+                type="application/pdf"
+              />
+            ) : selectedFile.type.startsWith("video") ? (
+              <video controls style={{ width: "100%", height: "auto" }}>
+                <source src={selectedFile.path} type={selectedFile.type} />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                Cannot preview this file type.
+              </Typography>
+            )
+          ) : (
+            <CircularProgress />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewModalOpen(false)} color="secondary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

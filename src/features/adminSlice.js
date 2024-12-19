@@ -58,14 +58,20 @@ export const getUserFiles = createAsyncThunk("getUserFiles",async(data, {rejectW
     }
 })
 
-export const adminFileSlice = createAsyncThunk("deleteFile", async(fileId,{rejectWithValue})=>{
+export const adminFileDelete = createAsyncThunk("deleteFile", async(fileIds,{rejectWithValue})=>{
     try {
-        const res = await axios.delete(`${baseApi}/admin/file/${fileId}`, {
+        const res = await axios.delete(`${baseApi}/admin/file`, {
+            params:{
+                fileIds,
+            },
             withCredentials: true,
         })
+        console.log(res)
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response.data);
+        console.log(error);
+
     }
 })
 

@@ -26,7 +26,7 @@ const DropdownMenu = ({ options }) => {
   }, []);
 
   return (
-    <div className="relative z-50">
+    <div className="relative z-[200]">
     
       <button ref={iconRef} onClick={toggleMenu}>
         <MoreVertIcon

@@ -27,7 +27,6 @@ const Pricing = React.lazy(() => import("./pages/Pricing/Pricing.jsx"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
 
 const App = () => {
-  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   useEffect(() => {
