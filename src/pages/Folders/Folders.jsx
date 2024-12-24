@@ -45,7 +45,9 @@ const Folders = () => {
         color="primary"
         startIcon={<Add />}
         onClick={() => setOpenDialog(true)}
-        className="mb-6"
+        sx={{
+          marginBottom:"16px"
+        }}
       >
         Create Folder
       </Button>
