@@ -52,7 +52,6 @@ const UserFiles = () => {
   const [renameFileData, setRenameFileData] = useState(null);
   const [newName, setNewName] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState([]);
   const [selectFile, setSelectFile] = useState(false)
 
   const { refetch, handleRefetch } = useContext(reFetchContext);
@@ -85,7 +84,7 @@ const UserFiles = () => {
     {
       label: "Delete",
       onClick: () => {
-        setFileToDelete((prev) => {
+        setSelectedFiles((prev) => {
           if (!prev.some((existingFile) => existingFile === file.id)) {
             return [...prev, file.id];
           }

@@ -18,6 +18,8 @@ import {
   TextField,
   Button,
   InputAdornment,
+  Checkbox,
+  FormControlLabel,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
@@ -31,7 +33,7 @@ import {
   fileView,
 } from "../../features/filesSlice"; // Import the deleteFile action
 import { toast } from "react-toastify";
-import SearchIcon from '@mui/icons-material/Search';
+import SearchIcon from "@mui/icons-material/Search";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -56,7 +58,9 @@ const Storage = () => {
   const [emailListArray, setEmailListArray] = useState([""]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-  const [keyword, setKeyword] = useState("")
+  const [keyword, setKeyword] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectFile, setSelectFile] = useState(false);
 
   const FRONT_END_URL = import.meta.env.VITE_FRONTEND_API_URL;
 
@@ -70,7 +74,7 @@ const Storage = () => {
     const fetchData = async () => {
       try {
         const response = await dispatch(
-          fetchFiles({ type, sortBy, orderDirection , keyword})
+          fetchFiles({ type, sortBy, orderDirection, keyword })
         );
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
@@ -79,7 +83,7 @@ const Storage = () => {
       }
     };
     fetchData();
-  }, [type, sortBy, orderDirection, dispatch, refetch,keyword]);
+  }, [type, sortBy, orderDirection, dispatch, refetch, keyword]);
 
   // Handle Sorting Changes
   const handleSortChange = (event) => {
@@ -111,13 +115,13 @@ const Storage = () => {
   const handleDownload = async (file) => {
     try {
       const response = await fetch(file.path);
-      const blob = await response.blob(); 
+      const blob = await response.blob();
 
       const blobUrl = URL.createObjectURL(blob);
 
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = file.name; 
+      link.download = file.name;
       document.body.appendChild(link);
 
       link.click();
@@ -129,7 +133,6 @@ const Storage = () => {
       if (res.payload?.success) {
         toast.success(`${file.name} downloaded successfully`);
       }
-
     } catch (error) {
       toast.error(`Failed to download ${file.name}`);
       console.error(error);
@@ -238,22 +241,19 @@ const Storage = () => {
   };
 
   const handleDeleteFile = async () => {
-    if (!fileToDelete) return;
-    const fileId = fileToDelete.id;
+    if (selectedFiles.length === 0) return;
 
     try {
-      const response = await dispatch(deleteFile(fileId));
+      const response = await dispatch(deleteFile(selectedFiles));
       if (response.payload?.success) {
-        toast.success("File deleted successfully");
-        setDeleteModalOpen(false);
-        setFileToDelete(null);
-
-        // Filter out the deleted file from the filteredFiles array
-        setFilteredFiles((prevFiles) =>
-          prevFiles.filter((file) => file.id !== fileId)
+        toast.success("Files deleted successfully");
+        setFilteredFiles((prev) =>
+          prev.filter((file) => !selectedFiles.includes(file.id))
         );
+        setDeleteModalOpen(false);
+        setSelectedFiles([]);
       } else {
-        toast.error(response.payload.message);
+        toast.error(response.payload.message || "Failed to delete files");
       }
     } catch (error) {
       toast.error(error.message || "Failed to delete file");
@@ -268,11 +268,35 @@ const Storage = () => {
     {
       label: "Delete",
       onClick: () => {
-        setFileToDelete(file);
+        setSelectedFiles((prev) => {
+          if (!prev.some((existingFile) => existingFile === file.id)) {
+            return [...prev, file.id];
+          }
+          return prev;
+        });
         setDeleteModalOpen(true);
       },
-    }, // Add Delete option
+    },
   ];
+
+  const handleFileSelect = (fileId) => {
+    setSelectedFiles((prevSelectedFiles) => {
+      if (prevSelectedFiles.includes(fileId)) {
+        return prevSelectedFiles.filter((id) => id !== fileId);
+      } else {
+        return [...prevSelectedFiles, fileId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectFile(true);
+    if (selectedFiles.length === filteredFiles.length) {
+      setSelectedFiles([]);
+    } else {
+      setSelectedFiles(filteredFiles.map((file) => file.id));
+    }
+  };
 
   const handleAddEmail = () => {
     setEmailListArray([...emailListArray, ""]);
@@ -299,98 +323,120 @@ const Storage = () => {
       </Typography>
 
       {/* Total Space */}
-      <Paper 
-  sx={{ 
-    padding: 3, 
-    marginBottom: 4, 
-    boxShadow: 3, 
-    borderRadius: 2, 
-    backgroundColor: '#f9f9f9' 
-  }}
->
-  <Typography 
-    variant="h6" 
-    sx={{ 
-      marginBottom: 2, 
-      fontWeight: 500 
-    }}
-  >
-    Total Space: 
-    <Typography 
-      variant="body1" 
-      component="b" 
-      sx={{ marginLeft: 1, color: '#4caf50' }}
-    >
-      {allData.reduce((acc, file) => acc + file.size, 0) / 1e6} MB
-    </Typography>
-  </Typography>
-
-  <Grid 
-    container 
-    spacing={2} 
-    alignItems="center" 
-    sx={{ marginBottom: 2 }}
-  >
-    <Grid item>
-      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-        Sort by:
-      </Typography>
-    </Grid>
-    <Grid item>
-      <FormControl variant="outlined" sx={{ minWidth: 150 }}>
-        <InputLabel>Sort By</InputLabel>
-        <Select
-          value={sortBy}
-          onChange={handleSortChange}
-          label="Sort By"
+      <Paper
+        sx={{
+          padding: 3,
+          marginBottom: 4,
+          boxShadow: 3,
+          borderRadius: 2,
+          backgroundColor: "#f9f9f9",
+        }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            marginBottom: 2,
+            fontWeight: 500,
+          }}
         >
-          <MenuItem value="size">Size</MenuItem>
-          <MenuItem value="date">Date</MenuItem>
-          <MenuItem value="name">Name</MenuItem>
-        </Select>
-      </FormControl>
-    </Grid>
-    <Grid item>
-      <FormControl variant="outlined" sx={{ minWidth: 150 }}>
-        <InputLabel>Order</InputLabel>
-        <Select
-          value={orderDirection}
-          onChange={handleOrderDirectionChange}
-          label="Order"
+          Total Space:
+          <Typography
+            variant="body1"
+            component="b"
+            sx={{ marginLeft: 1, color: "#4caf50" }}
+          >
+            {allData.reduce((acc, file) => acc + file.size, 0) / 1e6} MB
+          </Typography>
+        </Typography>
+
+        <Grid
+          container
+          spacing={2}
+          alignItems="center"
+          sx={{ marginBottom: 2 }}
         >
-          <MenuItem value="asc">Ascending</MenuItem>
-          <MenuItem value="desc">Descending</MenuItem>
-        </Select>
-      </FormControl>
-    </Grid>
-  </Grid>
+          <Grid item>
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              Sort by:
+            </Typography>
+          </Grid>
+          <Grid item>
+            <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+              <InputLabel>Sort By</InputLabel>
+              <Select
+                value={sortBy}
+                onChange={handleSortChange}
+                label="Sort By"
+              >
+                <MenuItem value="size">Size</MenuItem>
+                <MenuItem value="date">Date</MenuItem>
+                <MenuItem value="name">Name</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item>
+            <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+              <InputLabel>Order</InputLabel>
+              <Select
+                value={orderDirection}
+                onChange={handleOrderDirectionChange}
+                label="Order"
+              >
+                <MenuItem value="asc">Ascending</MenuItem>
+                <MenuItem value="desc">Descending</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+        </Grid>
 
-  <TextField
-    fullWidth
-    variant="outlined"
-    placeholder="Search by keyword"
-    value={keyword}
-    onChange={(e) => setKeyword(e.target.value)}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <SearchIcon />
-        </InputAdornment>
-      ),
-    }}
-    sx={{
-      backgroundColor: '#fff',
-      borderRadius: 1,
-      boxShadow: 1,
-    }}
-  />
-</Paper>
-
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search by keyword"
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          sx={{
+            backgroundColor: "#fff",
+            borderRadius: 1,
+            boxShadow: 1,
+          }}
+        />
+      </Paper>
 
       {/* Files Section */}
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
         Files:
       </Typography>
+
+      <div>
+        <Button
+          variant="outlined"
+          onClick={handleSelectAll}
+          sx={{ marginBottom: 2 }}
+        >
+          {selectedFiles.length === filteredFiles.length
+            ? "Deselect All"
+            : "Select All"}
+        </Button>
+        <Button
+          variant="outlined"
+          sx={{ marginBottom: 2, marginLeft: "10px" }}
+          onClick={() => {
+            setSelectFile(!selectFile);
+            setSelectedFiles([]);
+          }}
+        >
+          {selectFile ? "Deselect " : "Select "}
+        </Button>
+      </div>
+
       {loading ? (
         <Box
           sx={{
@@ -415,12 +461,37 @@ const Storage = () => {
                 flexDirection: "column",
                 justifyContent: "space-between",
                 transition: "0.3s ease",
+                position:"relative",
                 "&:hover": {
                   boxShadow: 6,
                 },
               }}
               key={file.id}
             >
+
+{ selectFile &&  <FormControlLabel
+            sx={{
+              position: "absolute",
+              bottom:"10px",
+              right:"10px",
+              cursor:"pointer",
+              zIndex:"100"
+            }}
+            control={
+              <Checkbox
+                checked={selectedFiles.includes(file.id)}
+                onChange={() => handleFileSelect(file.id)}
+                sx={{
+                  color: "primary.main",
+                 
+                  "&.Mui-checked": {
+                    color: "primary.main",
+                  },
+                }}
+              />
+            }
+            label=""
+          />}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <div

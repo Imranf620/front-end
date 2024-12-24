@@ -25,6 +25,8 @@ const UserProfile = React.lazy(() => import("./pages/UserProfile/UserProfile.jsx
 const HomePage = React.lazy(() => import("./pages/HomePage/HomePage.jsx"));
 const Pricing = React.lazy(() => import("./pages/Pricing/Pricing.jsx"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
+const Folders = React.lazy(() => import("./pages/Folders/Folders.jsx"));
+
 
 const App = () => {
   const dispatch = useDispatch();
@@ -56,6 +58,7 @@ const App = () => {
             <Route path="dashboard/all/shared" element={<MyShared />} />
             <Route path="dashboard/shared/:id" element={<SingleFile />} />
             <Route path="dashboard/bin/all" element={<Bin />} />
+            <Route path="dashboard/folders/all" element={<Folders />} />
 
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>

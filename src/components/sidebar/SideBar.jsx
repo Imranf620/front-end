@@ -18,7 +18,7 @@ const SideBar = ({handleToggle}) => {
 
   const sidebarItems = user?.user?.role==="USER" ? [
     { path: '/', label: 'Dashboard', icon: <Dashboard style={{ color: 'white' }} /> },
-    { path: '/dashboard/folders', label: 'Files Manager', icon: <Folder style={{ color: 'white' }} /> },
+    { path: '/dashboard/folders/all', label: 'Files Manager', icon: <Folder style={{ color: 'white' }} /> },
     { path: '/dashboard/files', label: 'Files', icon: <Folder style={{ color: 'white' }} /> },
     { path: '/dashboard/images', label: 'Images', icon: <Image style={{ color: 'white' }} /> },
     { path: '/dashboard/documents', label: 'Documents', icon: <Description style={{ color: 'white' }} /> },
