@@ -85,7 +85,6 @@ const Storage = () => {
     fetchData();
   }, [type, sortBy, orderDirection, dispatch, refetch, keyword]);
 
-  // Handle Sorting Changes
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
@@ -435,6 +434,20 @@ const Storage = () => {
         >
           {selectFile ? "Deselect " : "Select "}
         </Button>
+        {selectFile && <Button
+          variant="contained"
+          color="error"
+          sx={{ marginBottom: 2, marginLeft: "10px" }}
+          onClick={() => {
+            if (selectedFiles.length > 0) {
+              setDeleteModalOpen(true); 
+            } else {
+              toast.error("No files selected for deletion");
+            }
+          }}
+        >
+          Delete Selected Files
+        </Button>}
       </div>
 
       {loading ? (
@@ -461,37 +474,38 @@ const Storage = () => {
                 flexDirection: "column",
                 justifyContent: "space-between",
                 transition: "0.3s ease",
-                position:"relative",
+                position: "relative",
                 "&:hover": {
                   boxShadow: 6,
                 },
               }}
               key={file.id}
             >
+              {selectFile && (
+                <FormControlLabel
+                  sx={{
+                    position: "absolute",
+                    bottom: "10px",
+                    right: "10px",
+                    cursor: "pointer",
+                    zIndex: "100",
+                  }}
+                  control={
+                    <Checkbox
+                      checked={selectedFiles.includes(file.id)}
+                      onChange={() => handleFileSelect(file.id)}
+                      sx={{
+                        color: "primary.main",
 
-{ selectFile &&  <FormControlLabel
-            sx={{
-              position: "absolute",
-              bottom:"10px",
-              right:"10px",
-              cursor:"pointer",
-              zIndex:"100"
-            }}
-            control={
-              <Checkbox
-                checked={selectedFiles.includes(file.id)}
-                onChange={() => handleFileSelect(file.id)}
-                sx={{
-                  color: "primary.main",
-                 
-                  "&.Mui-checked": {
-                    color: "primary.main",
-                  },
-                }}
-              />
-            }
-            label=""
-          />}
+                        "&.Mui-checked": {
+                          color: "primary.main",
+                        },
+                      }}
+                    />
+                  }
+                  label=""
+                />
+              )}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <div
@@ -509,7 +523,16 @@ const Storage = () => {
                     <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
                   </div>
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: "bold",
+                        width: "144px",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "wrap",
+                        overflow: "hidden",
+                      }}
+                    >
                       {file.name}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">

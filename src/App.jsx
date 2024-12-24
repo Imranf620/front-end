@@ -26,6 +26,7 @@ const HomePage = React.lazy(() => import("./pages/HomePage/HomePage.jsx"));
 const Pricing = React.lazy(() => import("./pages/Pricing/Pricing.jsx"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
 const Folders = React.lazy(() => import("./pages/Folders/Folders.jsx"));
+const SingleFolder = React.lazy(() => import("./pages/SingleFolder/SingleFolder.jsx"));
 
 
 const App = () => {
@@ -59,6 +60,8 @@ const App = () => {
             <Route path="dashboard/shared/:id" element={<SingleFile />} />
             <Route path="dashboard/bin/all" element={<Bin />} />
             <Route path="dashboard/folders/all" element={<Folders />} />
+            <Route path="dashboard/folders/all/:id" element={<SingleFolder />} />
+
 
             {/* Admin Routes */}
             <Route element={<AdminRoute />}>

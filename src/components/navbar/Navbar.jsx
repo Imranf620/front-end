@@ -39,8 +39,9 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   const { handleRefetch } = useContext(reFetchContext);
   const navigate = useNavigate();
   const baseApi = import.meta.env.VITE_API_URL;
-
+ 
   const [isUploading, setIsUploading] = useState(false);
+  const folderId = (location.pathname.split('/')[4])
 
   const handleMenuClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
@@ -94,7 +95,8 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
         { withCredentials: true }
       );
 
-      const { url, downloadUrl } = response.data;
+      const { url, downloadUrl, publicUrl} = response.data;
+      console.log(response.data)
 
       // Step 2: Upload the file to S3
       const uploadResponse = await axios.put(url, selectedFile, {
@@ -119,6 +121,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
           size: selectedFile.size,
           type: selectedFile.type,
           path: downloadUrl,
+          folderId
         })
       );
       console.log("result", result);

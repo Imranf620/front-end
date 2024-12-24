@@ -29,7 +29,7 @@ import {
   getFilesSharedByMe,
   fileView,
   fileDownload,
-} from "../../features/filesSlice"; // Import the deleteFile action
+} from "../../features/filesSlice"; 
 import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
@@ -309,7 +309,8 @@ const MyShared = () => {
                     <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
                   </div>
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", width:"144px", textOverflow:"ellipsis", whiteSpace:"wrap", overflow:"hidden" }}>
+
                       {file?.file.name}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">

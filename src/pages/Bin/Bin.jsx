@@ -16,6 +16,8 @@ import {
   DialogContent,
   DialogTitle,
   Button,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
@@ -35,9 +37,12 @@ const Bin = () => {
   const [orderDirection, setOrderDirection] = useState("asc");
   const [page, setPage] = useState(1);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState(null);
+  const [fileToDelete, setFileToDelete] = useState([]);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectFile, setSelectFile] = useState(false);
+
 
 
 
@@ -119,11 +124,14 @@ const Bin = () => {
   
 
   const handleDeleteFile = async () => {
+    console.log('delete file', selectedFiles)
+    console.log(fileToDelete)
     if (!fileToDelete) return;
     const fileId = fileToDelete.id;
 
     try {
-      const response = await dispatch(deleteTrash(fileId));
+      const response = await dispatch(deleteTrash(selectedFiles));
+      console.log(response);
       if (response.payload?.success) {
         toast.success("File deleted successfully");
         setDeleteModalOpen(false);
@@ -159,8 +167,27 @@ const Bin = () => {
     { label: "View", onClick: () => handleView(file) },
     { label: "Download", onClick: () => handleDownload(file) },
     { label: "Restore", onClick: () => handleRestoreFile(file) },
-    { label: "Delete", onClick: () => { setFileToDelete(file); setDeleteModalOpen(true); } },
+    { label: "Delete", onClick: () => { setFileToDelete((prev)=>[...prev, file.id]); setDeleteModalOpen(true); } },
   ];
+
+  const handleFileSelect = (fileId) => {
+    setSelectedFiles((prevSelectedFiles) => {
+      if (prevSelectedFiles.includes(fileId)) {
+        return prevSelectedFiles.filter((id) => id !== fileId);
+      } else {
+        return [...prevSelectedFiles, fileId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    setSelectFile(true);
+    if (selectedFiles.length === filteredFiles.length) {
+      setSelectedFiles([]);
+    } else {
+      setSelectedFiles(filteredFiles.map((file) => file.id));
+    }
+  };
 
   return (
     <Box sx={{ padding: 4 }}>
@@ -203,6 +230,43 @@ const Bin = () => {
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
         Files:
       </Typography>
+
+      <div>
+        <Button
+          variant="outlined"
+          onClick={handleSelectAll}
+          sx={{ marginBottom: 2 }}
+        >
+          {selectedFiles.length === filteredFiles.length
+            ? "Deselect All"
+            : "Select All"}
+        </Button>
+        <Button
+          variant="outlined"
+          sx={{ marginBottom: 2, marginLeft: "10px" }}
+          onClick={() => {
+            setSelectFile(!selectFile);
+            setSelectedFiles([]);
+          }}
+        >
+          {selectFile ? "Deselect " : "Select "}
+        </Button>
+        {selectFile && <Button
+          variant="contained"
+          color="error"
+          sx={{ marginBottom: 2, marginLeft: "10px" }}
+          onClick={() => {
+            if (selectedFiles.length > 0) {
+              setDeleteModalOpen(true); 
+            } else {
+              toast.error("No files selected for deletion");
+            }
+          }}
+        >
+          Delete Selected Files
+        </Button>}
+      </div>
+
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "200px" }}>
           <CircularProgress />
@@ -220,12 +284,38 @@ const Bin = () => {
                 flexDirection: "column",
                 justifyContent: "space-between",
                 transition: "0.3s ease",
+                position:"relative",
                 "&:hover": {
                   boxShadow: 6,
                 },
               }}
               key={file.id}
             >
+                 {selectFile && (
+                <FormControlLabel
+                  sx={{
+                    position: "absolute",
+                    bottom: "10px",
+                    right: "10px",
+                    cursor: "pointer",
+                    zIndex: "100",
+                  }}
+                  control={
+                    <Checkbox
+                      checked={selectedFiles.includes(file.id)}
+                      onChange={() => handleFileSelect(file.id)}
+                      sx={{
+                        color: "primary.main",
+
+                        "&.Mui-checked": {
+                          color: "primary.main",
+                        },
+                      }}
+                    />
+                  }
+                  label=""
+                />
+              )}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Box sx={{ display: "flex", gap: 2 }}>
                   <div
@@ -243,7 +333,8 @@ const Bin = () => {
                     <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
                   </div>
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  <Typography variant="h6" sx={{ fontWeight: "bold", width:"144px", textOverflow:"ellipsis", whiteSpace:"wrap", overflow:"hidden" }}>
+
                       {file.file.name}
                     </Typography>
                     <Typography variant="body2" color="textSecondary">
