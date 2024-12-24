@@ -18,7 +18,7 @@ const ProfileSetting = () => {
   const [username, setUsername] = useState(user?.user?.name || '');
   const [email, setEmail] = useState(user?.user?.email || '');
   const [uploading, setUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState(user?.user?.image || '');  // Use existing image URL if present
+  const [imageUrl, setImageUrl] = useState(user?.user?.image || '');  
   console.log("imageUrl", imageUrl);
 
   const dispatch = useDispatch();
@@ -42,7 +42,7 @@ const ProfileSetting = () => {
           profile:true
         }, { withCredentials: true });
 
-        const { url, downloadUrl } = response.data;
+        const { url, downloadUrl , publicUrl} = response.data;
 
         console.log('downloadUrl', downloadUrl)
 
@@ -54,8 +54,8 @@ const ProfileSetting = () => {
 
         if (s3UploadResponse.status === 200) {
           console.log('Image uploaded to S3:', downloadUrl);
-          const uploadedImageUrl = downloadUrl;
-          setImageUrl(downloadUrl);
+          const uploadedImageUrl = publicUrl;
+          setImageUrl(publicUrl);
           imageToUpload = uploadedImageUrl;
         }
 

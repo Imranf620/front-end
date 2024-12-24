@@ -17,6 +17,7 @@ const GuestFile = () => {
     const fetchFile = async () => {
       try {
         const response = await dispatch(getGuestFile(fileId))
+        console.log(response.payload.data)
         setFile(response.payload.data)
         setIsLoading(false)
       } catch (error) {

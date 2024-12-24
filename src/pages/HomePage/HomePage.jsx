@@ -312,7 +312,7 @@ const HomePage = () => {
             className="transition-all duration-500 transform hover:scale-105"
           />
           <img
-            className="absolute -right-20 h-[80%] top-1/2 -translate-y-1/2 transition-all duration-500 transform hover:scale-105"
+            className="absolute right-auto md:-right-20 h-[80%] top-1/2 -translate-y-1/2 transition-all duration-500 transform hover:scale-105"
             src="https://fjord.dropboxstatic.com/warp/conversion/dropbox/warp/en-us/test/homepageredesign2024/hero/all-files-laptop.png?id=75a3b2c3-59ab-45f6-bdaa-fa64bac618e7&width=2880&output_type=png"
             alt="Laptop Illustration"
           />

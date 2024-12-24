@@ -124,8 +124,7 @@ const Bin = () => {
   
 
   const handleDeleteFile = async () => {
-    console.log('delete file', selectedFiles)
-    console.log(fileToDelete)
+
     if (!fileToDelete) return;
     const fileId = fileToDelete.id;
 
@@ -136,7 +135,9 @@ const Bin = () => {
         toast.success("File deleted successfully");
         setDeleteModalOpen(false);
         setFileToDelete(null);
-        setFilteredFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+        setFilteredFiles((prevFiles) =>
+          prevFiles.filter((file) => !selectedFiles.some((selectedFile) => selectedFile === file.id))
+        );
         dispatch(fetchMyProfile())
 
       } else {
@@ -167,7 +168,7 @@ const Bin = () => {
     { label: "View", onClick: () => handleView(file) },
     { label: "Download", onClick: () => handleDownload(file) },
     { label: "Restore", onClick: () => handleRestoreFile(file) },
-    { label: "Delete", onClick: () => { setFileToDelete((prev)=>[...prev, file.id]); setDeleteModalOpen(true); } },
+    { label: "Delete", onClick: () => { setSelectedFiles((prev)=>[...prev, file.id]); setDeleteModalOpen(true); } },
   ];
 
   const handleFileSelect = (fileId) => {

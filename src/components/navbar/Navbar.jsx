@@ -96,6 +96,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
       );
 
       const { url, downloadUrl, publicUrl} = response.data;
+      console.log(publicUrl)
       console.log(response.data)
 
       // Step 2: Upload the file to S3
@@ -120,7 +121,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
           name: selectedFile.name,
           size: selectedFile.size,
           type: selectedFile.type,
-          path: downloadUrl,
+          path: publicUrl,
           folderId
         })
       );

@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from "react";
+import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
 import { Link, useLocation } from "react-router-dom";
 
 const HomeNav = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const location = useLocation(); // To detect route changes
+  const [visible, setVisible] = useState(false); 
+  const location = useLocation(); 
 
   const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
 
   const handleScroll = () => {
+    if ((location.pathname === "/login" || location.pathname === "/signup")) {
+      setIsScrolled(true);
+      return;
+    }
     if (window.scrollY > 50) {
       setIsScrolled(true);
     } else {
@@ -28,17 +35,35 @@ const HomeNav = () => {
   }, [location]);
 
   return (
-    <div>
+    <div className="">
+      <div
+        onClick={() => setVisible(!visible)}
+        className="z-[99999] fixed top-4 right-2 md:hidden cursor-pointer"
+      >
+        {visible ? (
+          <CloseIcon  fontSize="large" className={` ${isScrolled?"text-black":"text-white"}   p-2 rounded-full`}/>
+        ) : (
+          <MenuIcon fontSize="large"  className={` ${isScrolled?"text-black":"text-white"}   p-2 rounded-full`} />
+        )}
+      </div>
+      
+      {/* Navigation Bar */}
       <nav
-        className={`fixed top-0 left-0 w-full text-white  ${
-          isScrolled ? "bg-black bg-opacity-80 h-16" : "bg-opacity-100 h-20"
+        className={`fixed ${visible ? "top-0" : "top-[-100vh]"} duration-300 left-0 h-full md:top-0 md:left-0 w-full text-white ${
+          isScrolled ? "bg-black bg-opacity-80 md:h-16" : "bg-opacity-100 md:h-20"
         } shadow-lg transition-all duration-300 z-50 ease-in-out`}
       >
         <div className="max-w-screen-xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold transition-all duration-300 transform hover:scale-105">
             Storify
           </h1>
-          <ul className="flex space-x-6">
+
+          {/* Navigation Links */}
+          <ul
+            className={`${
+              visible ? "flex flex-col" : "hidden"
+            } md:flex md:flex-row md:space-x-6 space-y-4 md:space-y-0 absolute md:static top-16 left-0 w-full md:w-auto bg-black bg-opacity-90 md:bg-transparent p-6 md:p-0`}
+          >
             <li className="relative">
               <div className="dropdown">
                 <button
@@ -86,7 +111,6 @@ const HomeNav = () => {
                 Login
               </Link>
             </li>
-
             <li>
               <Link
                 to="/signup"

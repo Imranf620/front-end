@@ -26,7 +26,9 @@ export const fetchTrash = createAsyncThunk(
   export const deleteTrash = createAsyncThunk("/files/delete", async (trashId, {rejectWithValue})=>{
     try {
         console.log(trashId);
-        const res = await axios.delete(`${baseApi}/trash/delete/${trashId}`,  {
+        const res = await axios.delete(`${baseApi}/trash/delete`,  {data:{
+          trashIds: trashId,
+        },
             withCredentials: true,
           });
       return res.data;
