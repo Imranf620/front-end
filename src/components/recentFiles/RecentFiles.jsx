@@ -197,7 +197,7 @@ const handleRenameFile = async () => {
     return;
   }
 
-  const updatedName = `${newName.trim()}${selectedFile.extension}`; // Append the preserved extension
+  const updatedName = `${newName.trim()}${selectedFile.extension}`;
   if (updatedName === selectedFile.name) {
     toast.info("File name is unchanged.");
     setRenameModalOpen(false);
@@ -254,7 +254,7 @@ const handleRenameFile = async () => {
                 <ArticleIcon className="text-white text-xl cursor-pointer" />
               </div>
               <div>
-                <p className=" text-sm font-medium">{file.name}</p>
+              <p className="text-sm font-medium  text-ellipsis overflow-hidden text-wrap whitespace-nowrap w-24 xl:w-auto  ">{file.name}</p>
                 <h2 className=" text-xs">{new Date(file.updatedAt).toLocaleTimeString()}, {new Date(file.updatedAt).toLocaleDateString()}</h2>
               </div>
             </div>
