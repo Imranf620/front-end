@@ -10,11 +10,18 @@ import {
   Button,
   Checkbox,
   Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress
 } from "@mui/material";
 import { MdFolder } from "react-icons/md";
-import { Add, Delete, Share } from "@mui/icons-material";
+import { Add, Delete, Share, Upload } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import FolderDialog from "../../components/FolderDialog/FolderDialog";
+import { uploadFile } from "../../features/filesSlice";
+import { useDispatch } from "react-redux";
 
 const SingleFolder = () => {
   const [folder, setFolder] = useState(null);
@@ -22,10 +29,17 @@ const SingleFolder = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedSubfolders, setSelectedSubfolders] = useState([]);
   const [isSelecting, setIsSelecting] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);  // Progress state
+  const [confirmUploadOpen, setConfirmUploadOpen] = useState(false);  // Confirm Upload Dialog state
+  const [selectedFile, setSelectedFile] = useState(null);  // Selected file state
+  const [refetch, setRefetch] = useState(false);
+  const baseApi = import.meta.env.VITE_API_URL;
   const { id } = useParams();
   const navigate = useNavigate();
-  const baseApi = import.meta.env.VITE_API_URL;
-  const [refetch, setRefetch] = useState(false);
+  const dispatch = useDispatch()
+
 
   useEffect(() => {
     fetchFolderData();
@@ -94,6 +108,78 @@ const SingleFolder = () => {
     setRefetch(!refetch);
   };
 
+  const handleFileSelection = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setConfirmUploadOpen(true);  // Open confirmation dialog
+    }
+  };
+
+  const handleUploadConfirm = async () => {
+    if (!selectedFile) {
+      toast.error("No file selected!");
+      return;
+    }
+
+    setConfirmUploadOpen(false);  // Close confirmation dialog
+    setUploading(true);
+    setUploadProgress(0);
+    setIsUploading(true);
+
+    try {
+      const response = await axios.post(
+        `${baseApi}/pre-ass-url`,
+        {
+          fileName: selectedFile.name,
+          fileType: selectedFile.type,
+        },
+        { withCredentials: true }
+      );
+
+      const { url, publicUrl } = response.data;
+
+      const uploadResponse = await axios.put(url, selectedFile, {
+        headers: {
+          "Content-Type": selectedFile.type,
+        },
+        onUploadProgress: (progressEvent) => {
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percent);
+        },
+      });
+
+      const result = await dispatch(
+        uploadFile({
+          name: selectedFile.name,
+          size: selectedFile.size,
+          type: selectedFile.type,
+          path: publicUrl,
+          folderId: id,
+        })
+      );
+
+      if (result.payload?.success) {
+        toast.success(result.payload.message);
+        setRefetch(!refetch);
+      } else {
+        toast.error(result.payload.message);
+      }
+    } catch (error) {
+      toast.error("Error uploading file: " + error.message);
+    } finally {
+      setUploadProgress(0);
+      setIsUploading(false);
+    }
+  };
+
+  const handleUploadCancel = () => {
+    setConfirmUploadOpen(false);
+    setSelectedFile(null); // Reset file selection
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -154,49 +240,79 @@ const SingleFolder = () => {
           >
             Create Folder
           </Button>
+
+          {/* Upload Button */}
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Upload />}
+            component="label"
+          >
+            {uploading ? "Uploading..." : "Upload File"}
+            <input
+              type="file"
+              hidden
+              onChange={handleFileSelection}
+              accept="*/*" // You can restrict file types if needed
+            />
+          </Button>
         </Box>
       </div>
 
-      {folder?.children?.length > 0 ? (
-        <Grid container spacing={2}>
-          {folder.children.map((subfolder) => (
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              key={subfolder.id}
-              className="relative"
-            >
-              <Card className="cursor-pointer">
-                {isSelecting && (
-                  <div className="absolute top-2 right-2">
-                    <Checkbox
-                      checked={selectedSubfolders.includes(subfolder.id)}
-                      onChange={() => toggleSubfolderSelection(subfolder.id)}
-                    />
-                  </div>
-                )}
-                <CardContent onClick={() => openFolder(subfolder.id)}>
-                  <div className="flex items-center space-x-3">
-                    <MdFolder size={40} className="text-[#b21ad8]" />
-                    <Typography variant="h6" className="font-semibold">
-                      {subfolder.name || "New Folder"}
-                    </Typography>
-                  </div>
-                  <Typography variant="body2" color="textSecondary">
-                    {subfolder.children?.length || 0} Subfolders
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      ) : (
-        <Typography variant="body1" className="text-gray-500">
-          No subfolders available.
-        </Typography>
+      {isUploading && (
+        <LinearProgress
+          variant="determinate"
+          value={uploadProgress}
+          sx={{ marginBottom: 2 }}
+        />
       )}
+
+      {/* Confirm Upload Dialog */}
+      <Dialog open={confirmUploadOpen} onClose={handleUploadCancel}>
+        <DialogTitle>Confirm Upload</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to upload the file: <strong>{selectedFile?.name}</strong>?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleUploadCancel} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleUploadConfirm} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Subfolder display */}
+      <Grid container spacing={2}>
+        {folder?.children?.map((subfolder) => (
+          <Grid item xs={12} sm={6} md={4} key={subfolder.id} className="relative">
+            <Card className="cursor-pointer">
+              {isSelecting && (
+                <div className="absolute top-2 right-2">
+                  <Checkbox
+                    checked={selectedSubfolders.includes(subfolder.id)}
+                    onChange={() => toggleSubfolderSelection(subfolder.id)}
+                  />
+                </div>
+              )}
+              <CardContent onClick={() => openFolder(subfolder.id)}>
+                <div className="flex items-center space-x-3">
+                  <MdFolder size={40} className="text-[#b21ad8]" />
+                  <Typography variant="h6" className="font-semibold">
+                    {subfolder.name || "New Folder"}
+                  </Typography>
+                </div>
+                <Typography variant="body2" color="textSecondary">
+                  {subfolder.children?.length || 0} Subfolders
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
 
       <FolderDialog
         open={openDialog}

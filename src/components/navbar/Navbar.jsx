@@ -41,7 +41,6 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   const baseApi = import.meta.env.VITE_API_URL;
  
   const [isUploading, setIsUploading] = useState(false);
-  const folderId = (location.pathname.split('/')[4])
 
   const handleMenuClick = useCallback((event) => {
     setAnchorEl(event.currentTarget);
@@ -79,9 +78,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
       return;
     }
 
-    setUploadProgress(0); // Reset progress
-    const formData = new FormData();
-    formData.append("file", selectedFile);
+
     setUploadProgress(0);
     setIsUploading(true);
     try {
@@ -96,10 +93,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
       );
 
       const { url, downloadUrl, publicUrl} = response.data;
-      console.log(publicUrl)
-      console.log(response.data)
-
-      // Step 2: Upload the file to S3
+     
       const uploadResponse = await axios.put(url, selectedFile, {
         headers: {
           "Content-Type": selectedFile.type,
@@ -108,12 +102,9 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
           const percent = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total
           );
-          setUploadProgress(percent); // Update progress
+          setUploadProgress(percent); 
         },
       });
-
-      // Step 3: Append download URL and proceed with file save in backend
-      formData.append("downloadUrl", downloadUrl);
 
       // Step 4: Upload file info to backend
       const result = await dispatch(
@@ -122,7 +113,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
           size: selectedFile.size,
           type: selectedFile.type,
           path: publicUrl,
-          folderId
+          
         })
       );
       console.log("result", result);
@@ -164,7 +155,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   return (
     <AppBar position="sticky" color="secondary">
       <Toolbar className="flex justify-between items-center">
-        <Typography variant="h6">Storify</Typography>
+        <Typography variant="h6">Gofilez</Typography>
 
         <div className="flex items-center gap-4">
           { user?.user?.role==="USER" && <Tooltip title="Upload File">

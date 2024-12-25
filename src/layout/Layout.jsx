@@ -48,10 +48,10 @@ const Layout = () => {
             />
           </Suspense>
         </div>
-        <div className="flex h-[91.4vh] overflow-y-hidden">
+        <div className="flex h-[95.3vh] xl:h-[91.4vh] overflow-y-hidden">
           <div
             ref={sidebarRef} 
-            className={`z-50 lg:w-64 duration-300 fixed lg:static top-0 left-0 w-0 ${
+            className={`z-50 lg:w-64 pt-[50px] lg:pt-0 duration-300 fixed lg:static top-0 left-0 w-0 ${
               show
                 ? "translate-x-0 lg:w-64"
                 : "w-0 -translate-x-64 lg:translate-x-0"

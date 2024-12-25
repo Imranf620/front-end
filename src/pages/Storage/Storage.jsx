@@ -328,7 +328,7 @@ const Storage = () => {
           marginBottom: 4,
           boxShadow: 3,
           borderRadius: 2,
-          backgroundColor: "#f9f9f9",
+          backgroundColor: isDarkMode ? " " : "#f9f9f9",
         }}
       >
         <Typography
@@ -402,7 +402,7 @@ const Storage = () => {
             ),
           }}
           sx={{
-            backgroundColor: "#fff",
+            backgroundColor: isDarkMode ? "" : "#f9f9f9",
             borderRadius: 1,
             boxShadow: 1,
           }}
@@ -434,20 +434,22 @@ const Storage = () => {
         >
           {selectFile ? "Deselect " : "Select "}
         </Button>
-        {selectFile && <Button
-          variant="contained"
-          color="error"
-          sx={{ marginBottom: 2, marginLeft: "10px" }}
-          onClick={() => {
-            if (selectedFiles.length > 0) {
-              setDeleteModalOpen(true); 
-            } else {
-              toast.error("No files selected for deletion");
-            }
-          }}
-        >
-          Delete Selected Files
-        </Button>}
+        {selectFile && (
+          <Button
+            variant="contained"
+            color="error"
+            sx={{ marginBottom: 2, marginLeft: "10px" }}
+            onClick={() => {
+              if (selectedFiles.length > 0) {
+                setDeleteModalOpen(true);
+              } else {
+                toast.error("No files selected for deletion");
+              }
+            }}
+          >
+            Delete Selected Files
+          </Button>
+        )}
       </div>
 
       {loading ? (
@@ -462,10 +464,14 @@ const Storage = () => {
           <CircularProgress />
         </Box>
       ) : filteredFiles.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="flex flex-wrap gap-4">
           {paginatedFiles.map((file) => (
             <Paper
+          
               sx={{
+                width: {
+                  xs: "maxWidth", 
+                },
                 padding: 3,
                 marginBottom: 2,
                 boxShadow: 2,
@@ -527,14 +533,18 @@ const Storage = () => {
                       variant="h6"
                       sx={{
                         fontWeight: "bold",
-                        width: "144px",
+                        width: {
+                          xs: "144px",
+                          sm: "144px", 
+                        },
                         textOverflow: "ellipsis",
-                        whiteSpace: "wrap",
+                        whiteSpace: "nowrap", 
                         overflow: "hidden",
                       }}
                     >
                       {file.name}
                     </Typography>
+
                     <Typography variant="body2" color="textSecondary">
                       {(file.size / 1e6).toFixed(2)} MB
                     </Typography>

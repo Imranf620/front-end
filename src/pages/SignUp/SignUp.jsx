@@ -16,6 +16,8 @@ const SignUp = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [num, setNum] = useState("");
+  const [socials, setSocials] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -49,7 +51,7 @@ const SignUp = () => {
   return (
     <>
       <HomeNav />
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex py-20 items-center justify-center min-h-screen bg-gray-100">
         <section className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
           <h2 className="text-3xl font-extrabold text-center text-[#7B1FA2] mb-6">
             Create Account
@@ -112,6 +114,41 @@ const SignUp = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#9C27B0] outline-none"
                 placeholder="Re-enter your password"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Social Connection
+              </label>
+
+              <select
+                name="Select"
+                onChange={(e) => setSocials(e.target.value)}
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#9C27B0] outline-none"
+              >
+                <option value="Telegram" className="text-blue-500">
+                  Telegram
+                </option>
+                <option value="Discord" className="text-green-500">
+                  Discord
+                </option>
+                <option value="Skype" className="text-purple-500">
+                  Skype
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Social Connection
+              </label>
+              <input
+                type="text"
+                value={num}
+                onChange={(e) => setNum(e.target.value)}
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-[#9C27B0] outline-none"
+                placeholder="Please enter your social ids"
               />
             </div>
 

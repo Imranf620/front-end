@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { forgotPassword, resetPassword } from "../../features/userSlice";
+import HomeNav from "../../components/homeNav/HomeNav";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -76,8 +77,10 @@ const ForgotPassword = () => {
   };
 
   return (
+    <>
+    <HomeNav/>
     <div className="w-screen h-screen flex">
-      <section className="md:w-1/2 w-full h-max md:h-auto flex flex-col justify-center items-center bg-gray-50 p-10">
+      <section className="w-full h-max md:h-auto flex flex-col justify-center items-center bg-gray-50 p-10">
         <div className="w-3/4 max-w-md flex flex-col gap-6">
           <h2 className="text-3xl font-bold mb-4">Storify</h2>
           <h2 className="text-xl font-semibold mb-2">
@@ -161,14 +164,10 @@ const ForgotPassword = () => {
           )}
         </div>
       </section>
-      <section className="w-1/2 hidden md:block">
-        <img
-          src="https://images.unsplash.com/photo-1581090464777-f3220bbe1b8b?w=1000&auto=format&fit=crop&q=80"
-          alt="Forgot Password"
-          className="w-full h-full object-cover"
-        />
-      </section>
+  
     </div>
+    </>
+
   );
 };
 

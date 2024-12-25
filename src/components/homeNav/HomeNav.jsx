@@ -49,8 +49,8 @@ const HomeNav = () => {
       
       {/* Navigation Bar */}
       <nav
-        className={`fixed ${visible ? "top-0" : "top-[-100vh]"} duration-300 left-0 h-full md:top-0 md:left-0 w-full text-white ${
-          isScrolled ? "bg-black bg-opacity-80 md:h-16" : "bg-opacity-100 md:h-20"
+        className={`fixed ${visible ? "top-0" : "top-[-100vh]"} duration-300 left-0 h-full md:top-0 md:left-0 w-full text-white bg-black bg-opacity-80 ${
+          isScrolled ? " md:h-16" : " md:h-20"
         } shadow-lg transition-all duration-300 z-50 ease-in-out`}
       >
         <div className="max-w-screen-xl mx-auto px-6 py-4 flex justify-between items-center">
@@ -64,7 +64,7 @@ const HomeNav = () => {
               visible ? "flex flex-col" : "hidden"
             } md:flex md:flex-row md:space-x-6 space-y-4 md:space-y-0 absolute md:static top-16 left-0 w-full md:w-auto bg-black bg-opacity-90 md:bg-transparent p-6 md:p-0`}
           >
-            <li className="relative">
+            {/* <li className="relative">
               <div className="dropdown">
                 <button
                   onMouseEnter={toggleDropdown}
@@ -94,7 +94,7 @@ const HomeNav = () => {
                   </ul>
                 )}
               </div>
-            </li>
+            </li> */}
             <li>
               <Link
                 to="/home"
@@ -127,14 +127,7 @@ const HomeNav = () => {
                 Pricing
               </Link>
             </li>
-            <li>
-              <Link
-                to="/start"
-                className="hover:text-gray-400 transition-all duration-200"
-              >
-                Get Started
-              </Link>
-            </li>
+          
           </ul>
         </div>
       </nav>
