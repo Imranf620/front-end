@@ -114,7 +114,7 @@ const HomePage = () => {
 
       });
       if (uploadResponse.status === 200) {
-        let res  =  await dispatch(uploadGuestFile({selectedFile, downloadUrl,publicUrl}))
+        let res  =  await dispatch(uploadGuestFile({selectedFile,publicUrl}))
         setProgress(0);
         setIsShareDialogOpen(false);
         fileId= res.payload.data.id

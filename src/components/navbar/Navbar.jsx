@@ -157,8 +157,8 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
       <Toolbar className="flex justify-between items-center">
         <Typography variant="h6">Gofilez</Typography>
 
-        <div className="flex items-center gap-4">
-          { user?.user?.role==="USER" && <Tooltip title="Upload File">
+        <div className="flex items-center gap-1 md:gap-4">
+          {!isUploading &&  user?.user?.role==="USER" && <Tooltip title="Upload File">
             <Button
               variant="contained"
               color="secondary"
