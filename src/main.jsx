@@ -8,8 +8,11 @@ import { ThemeProvider } from "./context/ThemeContext.jsx";
 import store from "./store.js";
 import { Provider } from "react-redux";
 import ReFetchState from "./context/ReFetchContext.jsx";
+import { HelmetProvider } from "react-helmet-async";
 
 createRoot(document.getElementById("root")).render(
+  <HelmetProvider>
+
   <BrowserRouter 
   future={{
     v7_startTransition: true,
@@ -34,4 +37,6 @@ createRoot(document.getElementById("root")).render(
       pauseOnHover
     />
   </BrowserRouter>
+  </HelmetProvider>
+
 );

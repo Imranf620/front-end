@@ -6,6 +6,7 @@ import { Box, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Paper, Ty
 import PieArcLabel from "../../components/profileSetting/charts/PieChart";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import SEO from "../../components/SEO/SEO";
 
 
 const Dashboard = () => {
@@ -35,6 +36,12 @@ const Dashboard = () => {
   console.log(user?.percentageUsed)
 
   return (
+    <>
+    <SEO 
+        title="Dashboard - Gofilez" 
+        description="Manage and access all your files from the dashboard. Secure and free cloud storage solutions." 
+        keywords="dashboard, cloud storage, free file management, secure storage" 
+      />
     <div className="flex gap-4">
       <section className="md:w-2/3 w-full">
       <Box>
@@ -97,6 +104,8 @@ const Dashboard = () => {
         </DialogActions>
       </Dialog>
     </div>
+    </>
+
   );
 };
 

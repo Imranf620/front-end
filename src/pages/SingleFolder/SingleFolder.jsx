@@ -22,6 +22,7 @@ import { toast } from "react-toastify";
 import FolderDialog from "../../components/FolderDialog/FolderDialog";
 import { uploadFile } from "../../features/filesSlice";
 import { useDispatch } from "react-redux";
+import SEO from "../../components/SEO/SEO";
 
 const SingleFolder = () => {
   const [folder, setFolder] = useState(null);
@@ -189,6 +190,11 @@ const SingleFolder = () => {
   }
 
   return (
+
+    <>
+    <SEO title={`${folder?.name} - Gofilez`} description={`View and manage ${folder?.name} folder in Gofilez cloud storage`} keywords="folder, cloud storage, file management, secure storage"
+    />
+
     <div className="p-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl md:text-2xl font-bold">{folder?.name}</h1>
@@ -321,6 +327,8 @@ const SingleFolder = () => {
         parentId={id}
       />
     </div>
+    </>
+
   );
 };
 

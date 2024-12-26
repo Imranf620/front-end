@@ -26,6 +26,7 @@ import { toast } from "react-toastify";
 import { deleteTrash, fetchTrash, restoreFromBin } from "../../features/trashSlice";
 import { fetchMyProfile } from "../../features/userSlice";
 import { fileDownload, fileView } from "../../features/filesSlice";
+import SEO from "../../components/SEO/SEO";
 
 
 
@@ -191,6 +192,12 @@ const Bin = () => {
   };
 
   return (
+    <>
+    <SEO
+    title="Bin - Gofilez"
+    description="Manage and restore deleted files from the bin. Secure and free cloud storage solutions."
+    keywords="bin, cloud storage, deleted files, secure storage, manage files"
+    />
     <Box sx={{ padding: 4 }}>
       <Typography className="capitalize" variant="h4" component="h1" sx={{ marginBottom: 2 }}>
         {type}
@@ -423,6 +430,8 @@ const Bin = () => {
         </DialogActions>
       </Dialog>
     </Box>
+    </>
+
   );
 };
 

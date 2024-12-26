@@ -17,6 +17,7 @@ import { MdFolder } from "react-icons/md";
 import { Add, Delete, Share, MoreVert } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import SEO from "../../components/SEO/SEO";
 
 const Folders = () => {
   const [allFolders, setAllFolders] = useState([]);
@@ -84,6 +85,12 @@ const Folders = () => {
   };
 
   return (
+    <>
+      <SEO 
+        title="All Folders - Gofilez" 
+        description="Browse all your folders in one place. Manage, organize, and share files with ease using Gofilez cloud storage." 
+        keywords="folders, cloud storage, file organization, secure storage, manage files" 
+      />
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Folders</h1>
       <div className="flex justify-between items-center mb-4">
@@ -184,6 +191,8 @@ const Folders = () => {
         onCreate={handleCreateFolder}
       />
     </div>
+    </>
+
   );
 };
 

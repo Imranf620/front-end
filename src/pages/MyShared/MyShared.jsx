@@ -33,6 +33,7 @@ import {
 import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
+import SEO from "../../components/SEO/SEO";
 
 const MyShared = () => {
   const { type } = useParams();
@@ -203,6 +204,12 @@ const MyShared = () => {
   };
 
   return (
+    <>
+    <SEO
+    title="My Shared Files - Gofilez"
+    description="View and manage all files shared by you. Secure and free cloud storage solutions."
+    keywords="shared files, cloud storage, free file management, secure storage"
+    />
     <Box sx={{ padding: 4 }}>
       {/* Heading */}
       <Typography
@@ -450,6 +457,8 @@ const MyShared = () => {
         </DialogActions>
       </Dialog>
     </Box>
+    </>
+
   );
 };
 
