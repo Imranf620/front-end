@@ -31,7 +31,7 @@ import {
   shareFile,
   fileDownload,
   fileView,
-} from "../../features/filesSlice"; // Import the deleteFile action
+} from "../../features/filesSlice";
 import { toast } from "react-toastify";
 import SearchIcon from "@mui/icons-material/Search";
 import { reFetchContext } from "../../context/ReFetchContext";
@@ -51,7 +51,6 @@ const Storage = () => {
   const [renameFileData, setRenameFileData] = useState(null);
   const [newName, setNewName] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [fileToDelete, setFileToDelete] = useState(null);
   const { refetch, handleRefetch } = useContext(reFetchContext);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareOption, setShareOption] = useState("public");

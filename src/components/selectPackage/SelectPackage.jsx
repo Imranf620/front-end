@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -8,13 +8,22 @@ import {
   InputLabel,
   FormControl,
   Modal,
-} from '@mui/material';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useDispatch } from 'react-redux';
-import { getPricing } from '../../features/paymentSlice';
+} from "@mui/material";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import { useDispatch } from "react-redux";
+import { getPricing } from "../../features/paymentSlice";
 
-const stripePromise = loadStripe('pk_test_51PgwQeRsPs7LocjUEplV8ZtqASWq9qNoAYtmFCCwyicLgTXcYS6V6yVRXRyZAPvg9zBL5yx6HHuUQUorkM05go1v0021YtXR4L');
+const VITE_PAYMENT_API= import.meta.env.VITE_PAYMENT_API
+
+const stripePromise = loadStripe(
+  VITE_PAYMENT_API
+);
 
 const SelectPackage = ({ upgrade = false, onCancel }) => {
   const [days, setDays] = useState(30);
@@ -23,23 +32,21 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
   const [storage, setStorage] = useState(100);
   const [price, setPrice] = useState(0);
   const [openModal, setOpenModal] = useState(false);
-  const dispatch = useDispatch()
-  
+  const dispatch = useDispatch();
 
   const availableDays = [7, 14, 30, 60, 90];
   const availableSpeeds = [10, 50, 100, 200, 500];
   const availableStorage = [50, 100, 200, 500, 1000];
-  const [packagePrices, setpackagePrices] = useState({})
-  const [loading, setLoading] = useState(true)
+  const [packagePrices, setpackagePrices] = useState({});
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const fetchPricing = async()=>{
-      const result = await dispatch(getPricing())
-      console.log(result.payload.data)
-      setpackagePrices(result.payload.data)
-    }
-    fetchPricing()
-  }, [dispatch])
-  
+    const fetchPricing = async () => {
+      const result = await dispatch(getPricing());
+      console.log(result.payload.data);
+      setpackagePrices(result.payload.data);
+    };
+    fetchPricing();
+  }, [dispatch]);
 
   const pricing = {
     perDayPrice: 2,
@@ -109,7 +116,11 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
         </Typography>
         <FormControl fullWidth variant="outlined">
           <InputLabel>Select Upload Speed</InputLabel>
-          <Select value={uploadSpeed} onChange={handleUploadSpeedChange} label="Select Upload Speed">
+          <Select
+            value={uploadSpeed}
+            onChange={handleUploadSpeedChange}
+            label="Select Upload Speed"
+          >
             {availableSpeeds.map((speed) => (
               <MenuItem key={speed} value={speed}>
                 {speed} Mbps
@@ -125,7 +136,11 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
         </Typography>
         <FormControl fullWidth variant="outlined">
           <InputLabel>Select Download Speed</InputLabel>
-          <Select value={downloadSpeed} onChange={handleDownloadSpeedChange} label="Select Download Speed">
+          <Select
+            value={downloadSpeed}
+            onChange={handleDownloadSpeedChange}
+            label="Select Download Speed"
+          >
             {availableSpeeds.map((speed) => (
               <MenuItem key={speed} value={speed}>
                 {speed} Mbps
@@ -141,7 +156,11 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
         </Typography>
         <FormControl fullWidth variant="outlined">
           <InputLabel>Select Storage</InputLabel>
-          <Select value={storage} onChange={handleStorageChange} label="Select Storage">
+          <Select
+            value={storage}
+            onChange={handleStorageChange}
+            label="Select Storage"
+          >
             {availableStorage.map((stor) => (
               <MenuItem key={stor} value={stor}>
                 {stor} GB
@@ -160,7 +179,7 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
       <Button
         variant="contained"
         fullWidth
-        color='secondary'
+        color="secondary"
         onClick={handleSubscribeClick}
         className="py-3 font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700"
       >
@@ -168,9 +187,7 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
       </Button>
 
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box
-          className="w-96 p-6 bg-white rounded-lg shadow-xl mx-auto mt-32"
-        >
+        <Box className="w-96 p-6 bg-white rounded-lg shadow-xl mx-auto mt-32">
           <Typography variant="h5" gutterBottom className="text-gray-900">
             Enter Payment Details
           </Typography>
@@ -196,7 +213,7 @@ const StripePaymentForm = ({ price, setOpenModal }) => {
     }
 
     const { error, paymentMethod } = await stripe.createPaymentMethod({
-      type: 'card',
+      type: "card",
       card: elements.getElement(CardElement),
     });
 
@@ -204,7 +221,7 @@ const StripePaymentForm = ({ price, setOpenModal }) => {
       alert(error.message);
     } else {
       console.log(paymentMethod);
-      alert('Payment successful!');
+      alert("Payment successful!");
       setOpenModal(false);
     }
   };

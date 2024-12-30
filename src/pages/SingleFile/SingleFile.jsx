@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from "react";
+
 import {
-  Box,
+  CircularProgress,
   Typography,
   Paper,
-  CircularProgress,
+  Button,
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
@@ -12,10 +19,13 @@ import { getSingleFile } from "../../features/filesSlice";
 import { toast } from "react-toastify";
 import { useTheme } from "../../context/ThemeContext";
 import { useParams } from "react-router-dom";
-
+import { fileDownload, fileView } from "./../../features/filesSlice";
 const SingleFile = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+
   const { isDarkMode } = useTheme();
-  const { id } = useParams(); 
+  const { id } = useParams();
   const dispatch = useDispatch();
 
   const { loading } = useSelector((state) => state.files);
@@ -27,7 +37,7 @@ const SingleFile = () => {
       try {
         const response = await dispatch(getSingleFile(id));
 
-        console.log(response)
+        console.log(response);
         setFile(response?.payload?.data || null);
       } catch (error) {
         toast.error(error.message || "Failed to fetch the file");
@@ -37,23 +47,41 @@ const SingleFile = () => {
   }, [id, dispatch]);
 
   // Handle file actions
-  const handleView = () => {
-    if (file) {
-      const fileUrl = `${import.meta.env.VITE_API_URL}/../../${file.path}`;
-      window.open(fileUrl, "_blank");
+  const handleView = async () => {
+    setSelectedFile(file);
+    setViewModalOpen(true);
+    console.log(file);
+
+    const res = await dispatch(fileView(file.id));
+    if (res.payload?.success) {
+      toast.success(`${file.name} opened`);
     }
   };
 
-  const handleDownload = () => {
-    if (file) {
-      const fileUrl = `${import.meta.env.VITE_API_URL}/../../${file.path}`;
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(file.path);
+      const blob = await response.blob();
+
+      const blobUrl = URL.createObjectURL(blob);
+
       const link = document.createElement("a");
-      link.href = fileUrl;
+      link.href = blobUrl;
       link.download = file.name;
       document.body.appendChild(link);
+
       link.click();
+
       document.body.removeChild(link);
-      toast.success(`${file.name} downloaded successfully`);
+      URL.revokeObjectURL(blobUrl);
+      const res = await dispatch(fileDownload(file.id));
+
+      if (res.payload?.success) {
+        toast.success(`${file.name} downloaded successfully`);
+      }
+    } catch (error) {
+      toast.error(`Failed to download ${file.name}`);
+      console.error(error);
     }
   };
 
@@ -134,6 +162,48 @@ const SingleFile = () => {
           File not found or unavailable.
         </Typography>
       )}
+
+      <Dialog
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        maxWidth="md"
+      >
+        <DialogTitle>View File</DialogTitle>
+        <DialogContent>
+          {selectedFile ? (
+            selectedFile.type.startsWith("image") ? (
+              <img
+                src={selectedFile.path}
+                alt="file"
+                style={{ width: "100%", height: "auto" }}
+              />
+            ) : selectedFile.type === "application/pdf" ? (
+              <embed
+                src={selectedFile.path}
+                width="100%"
+                height="500px"
+                type="application/pdf"
+              />
+            ) : selectedFile.type.startsWith("video") ? (
+              <video controls style={{ width: "100%", height: "auto" }}>
+                <source src={selectedFile.path} type={selectedFile.type} />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <Typography variant="body2" color="textSecondary">
+                Cannot preview this file type.
+              </Typography>
+            )
+          ) : (
+            <CircularProgress />
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setViewModalOpen(false)} color="secondary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

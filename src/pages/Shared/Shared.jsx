@@ -253,9 +253,21 @@ const Shared = () => {
                       <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
                     </div>
                     <Box>
-                      <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                        {file.name}
-                      </Typography>
+                       <Typography
+                                           variant="h6"
+                                           sx={{
+                                             fontWeight: "bold",
+                                             width: {
+                                               xs: "144px",
+                                               sm: "144px", 
+                                             },
+                                             textOverflow: "ellipsis",
+                                             whiteSpace: "nowrap", 
+                                             overflow: "hidden",
+                                           }}
+                                         >
+                                           {file.name}
+                                         </Typography>
                       <Typography variant="body2" color="textSecondary">
                         {(file.size / 1e6).toFixed(2)} MB
                       </Typography>
