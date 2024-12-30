@@ -46,7 +46,7 @@ const App = () => {
         <Route path="/home/:fileId" element={<HomePage />} />
         <Route path="/home" element={<HomePage />} />
         
-        <Route path="/pricing" element={<Pricing />} />
+        {/* <Route path="/pricing" element={<Pricing />} /> */}
 
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
@@ -54,7 +54,7 @@ const App = () => {
             <Route path="" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="dashboard/:type" element={<Storage />} />
-            <Route path="packages" element={<Packages />} />
+            {/* <Route path="packages" element={<Packages />} /> */}
             <Route path="dashboard/all/accessible" element={<Shared />} />
             <Route path="dashboard/all/shared" element={<MyShared />} />
             <Route path="dashboard/shared/:id" element={<SingleFile />} />

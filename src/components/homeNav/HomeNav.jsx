@@ -119,14 +119,14 @@ const HomeNav = () => {
                 Signup
               </Link>
             </li>
-            <li>
+            {/* <li>
               <Link
                 to="/pricing"
                 className="hover:text-gray-400 transition-all duration-200"
               >
                 Pricing
               </Link>
-            </li>
+            </li> */}
           
           </ul>
         </div>
