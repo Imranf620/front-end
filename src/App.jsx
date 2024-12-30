@@ -27,6 +27,9 @@ const Pricing = React.lazy(() => import("./pages/Pricing/Pricing.jsx"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword/ForgotPassword.jsx"));
 const Folders = React.lazy(() => import("./pages/Folders/Folders.jsx"));
 const SingleFolder = React.lazy(() => import("./pages/SingleFolder/SingleFolder.jsx"));
+const Terms = React.lazy(() => import("./pages/Terms/Terms.jsx"));
+const Privacy = React.lazy(() => import("./pages/Privacy/Privacy.jsx"));
+import CookieConsent from "./components/CookieConsent/CookieConsent.jsx";
 
 
 const App = () => {
@@ -45,6 +48,9 @@ const App = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/home/:fileId" element={<HomePage />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+
         
         {/* <Route path="/pricing" element={<Pricing />} /> */}
 
@@ -71,9 +77,10 @@ const App = () => {
             </Route>
           </Route>
         </Route>
-
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <CookieConsent />
+
     </Suspense>
   );
 };
