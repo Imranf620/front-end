@@ -1,7 +1,7 @@
 # Frontend README
 
 ## Project Overview
-This frontend application is built using **React.js** with modern JavaScript and TypeScript practices. It provides a responsive user interface for file management, user authentication, and interaction with the backend APIs. The project is optimized for performance and usability.
+This frontend application is built using **React.js** with modern JavaScript practices. It provides a responsive user interface for file management, user authentication, and interaction with the backend APIs. The project is optimized for performance and usability.
 
 ## Features
 - User authentication with secure login and registration.
