@@ -67,7 +67,6 @@ const UserFiles = () => {
         const response = await dispatch(
           getUserFiles({ userId, sortBy, orderDirection })
         );
-        console.log(response.payload.data);
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
       } catch (error) {
@@ -121,7 +120,6 @@ const UserFiles = () => {
   const handleView = async (file) => {
     setSelectedFile(file);
     setViewModalOpen(true);
-    console.log(file);
 
     const res = await dispatch(fileView(file.id));
     if (res.payload?.success) {

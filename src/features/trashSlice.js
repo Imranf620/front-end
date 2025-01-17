@@ -6,7 +6,6 @@ export const fetchTrash = createAsyncThunk(
   "/files/fetch",
   async ({ type, sortBy, orderDirection }, { rejectWithValue }) => {
     try {
-      console.log(sortBy, orderDirection);
       const res = await axios.get(`${baseApi}/trash/`, {
         params: {
             orderBy: sortBy,
@@ -16,7 +15,6 @@ export const fetchTrash = createAsyncThunk(
       });
       return res.data;
     } catch (error) {
-      console.log(error.response);
       return rejectWithValue(error.response.data);
     }
   }
@@ -25,7 +23,6 @@ export const fetchTrash = createAsyncThunk(
 
   export const deleteTrash = createAsyncThunk("/files/delete", async (trashId, {rejectWithValue})=>{
     try {
-        console.log(trashId);
         const res = await axios.delete(`${baseApi}/trash/delete`,  {data:{
           trashIds: trashId,
         },
@@ -39,7 +36,6 @@ export const fetchTrash = createAsyncThunk(
 
   export const restoreFromBin = createAsyncThunk("/files/delete", async (trashId, {rejectWithValue})=>{
     try {
-        console.log(trashId);
         const res = await axios.post(`${baseApi}/trash/restore/${trashId}`,null,  {
             withCredentials: true,
           });

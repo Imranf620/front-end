@@ -20,7 +20,6 @@ const MyPackage = () => {
   const { isDarkMode } = useTheme();
   const [isModalOpen, setModalOpen] = useState(false);
   const { user } = useSelector((state) => state.auth);
-  console.log(user?.user)
 
   // Selected package details
   const selectedPackage = {

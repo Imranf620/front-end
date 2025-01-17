@@ -47,7 +47,6 @@ const UserProfile = () => {
 
         if (res.payload.success) {
           setUserDetail(res.payload.data);
-          console.log(res.payload.data);
 
           setFormData({
             name: res.payload.data.name,

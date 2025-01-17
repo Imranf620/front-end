@@ -9,7 +9,6 @@ export const login = createAsyncThunk("/login", async(data,{rejectWithValue})=>{
         const res = await axios.post(`${baseApi}/user/login`, data, {
             withCredentials: true, 
         })
-        console.log(res)
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response.data);
@@ -34,7 +33,6 @@ export const fetchMyProfile = createAsyncThunk("/fetch/my-profile",
             const res = await axios.get(`${baseApi}/user/me`, {
                 withCredentials: true, 
             })
-            console.log(res.data)
             return res.data;
         } catch (error) {
             return rejectWithValue(error.response.data);
@@ -56,7 +54,6 @@ export const logout = createAsyncThunk("/logout",async(_,{rejectWithValue})=>{
 
 export const updateProfile = createAsyncThunk("/update/profile", async (data, { rejectWithValue }) => {
     try {
-        console.log(data)
       const res = await axios.put(`${baseApi}/user/update`, data, {
         headers: {
           'Content-Type': 'multipart/form-data',

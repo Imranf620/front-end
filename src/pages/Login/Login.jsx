@@ -60,7 +60,7 @@ const Login = () => {
       >
         <section className="w-full my-20 max-w-lg p-6 md:p-8 bg-white shadow-lg rounded-lg">
           <h2 className="text-3xl font-bold text-center mb-6 text-[#7B1FA2]">
-            Storify
+            Gofilez
           </h2>
           <h3 className="text-xl font-semibold text-center mb-4 text-gray-700">
             Welcome back!
@@ -70,7 +70,6 @@ const Login = () => {
           </p>
 
           <div className="flex flex-col gap-4">
-            {/* Email Field */}
             <div className="flex flex-col">
               <label className="font-medium text-sm mb-1" htmlFor="email">
                 Email

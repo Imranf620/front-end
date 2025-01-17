@@ -14,7 +14,6 @@ const ProfileImage = ({onImageChange,imageUrl}) => {
     onImageChange(file)
 
   };
-  console.log(user)
 
   return (
     <Box textAlign="center" mb={3}>

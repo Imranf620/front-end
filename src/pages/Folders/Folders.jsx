@@ -61,7 +61,6 @@ const Folders = () => {
   };
 
   const handleShareFolders = () => {
-    console.log("Sharing folders:", selectedFolders);
   
   };
 

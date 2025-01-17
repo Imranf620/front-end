@@ -33,7 +33,7 @@ const Footer = () => {
         </div>
 
         <div className="text-xs opacity-70">
-          <p>&copy; {new Date().getFullYear()} Storify. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Gofilez. All rights reserved.</p>
         </div>
       </div>
     </footer>

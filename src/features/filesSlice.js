@@ -6,7 +6,6 @@ export const fetchFiles = createAsyncThunk(
   "/files/fetch",
   async ({ type, sortBy, orderDirection, keyword }, { rejectWithValue }) => {
     try {
-      console.log(type);
       const res = await axios.get(
         `${baseApi}/files/get/${type}?keyword=${keyword}`,
         {
@@ -19,7 +18,6 @@ export const fetchFiles = createAsyncThunk(
       );
       return res.data;
     } catch (error) {
-      console.log(error.response);
       return rejectWithValue(error.response.data);
     }
   }
@@ -35,10 +33,8 @@ export const uploadFile = createAsyncThunk(
         },
         withCredentials: true,
       });
-      console.log(res);
       return res.data;
     } catch (error) {
-      console.log("error", error);
       return rejectWithValue(error.response.data);
     }
   }
@@ -69,7 +65,6 @@ export const getLatestFiles = createAsyncThunk(
       const res = await axios.get(`${baseApi}/files/get/latest`, {
         withCredentials: true,
       });
-      console.log(res.data);
       return res.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
@@ -82,7 +77,6 @@ export const deleteFile = createAsyncThunk(
   async (fileIds, { rejectWithValue }) => {
     try {
 
-      console.log("fileIds", fileIds)
       const res = await axios.post(`${baseApi}/trash`, null, {
         params:{fileIds:fileIds},
         withCredentials: true,
@@ -98,7 +92,6 @@ export const shareFile = createAsyncThunk(
   "/shareFile",
   async (data, { rejectWithValue }) => {
     try {
-      console.log("data", data);
       const res = await axios.post(`${baseApi}/files/share`, data, {
         withCredentials: true,
       });
@@ -201,7 +194,6 @@ export const uploadGuestFile = createAsyncThunk(
   "/uploadGuestFile",
   async (data, { rejectWithValue }) => {
     try {
-      console.log("Uploading", data);
       const res = await axios.post(
         `${baseApi}/files/guest/upload`,
         {
@@ -214,7 +206,6 @@ export const uploadGuestFile = createAsyncThunk(
           withCredentials: true,
         }
       );
-      console.log("res", res);
       return res.data;
     } catch (error) {
       return rejectWithValue(error.response.data);

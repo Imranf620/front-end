@@ -41,7 +41,6 @@ export const updateUserProfile= createAsyncThunk("updateUserProfile", async (dat
 
 export const getUserFiles = createAsyncThunk("getUserFiles",async(data, {rejectWithValue})=>{
     try {
-        console.log("data is ", data)
         const userId = data.userId;
         const res = await axios.get(`${baseApi}/admin/files`, {
             params:{
@@ -66,11 +65,9 @@ export const adminFileDelete = createAsyncThunk("deleteFile", async(fileIds,{rej
             },
             withCredentials: true,
         })
-        console.log(res)
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response.data);
-        console.log(error);
 
     }
 })

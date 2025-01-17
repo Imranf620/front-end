@@ -5,7 +5,6 @@ import "./pieChart.css"
 
 export default function PieArcLabel() {
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
 
   const totalDataInGb = (user.totalFileSize / 1e9).toFixed(2);
   const documentSizeInPerc = ((user.documentSizeInGB / totalDataInGb) * 100).toFixed(2);

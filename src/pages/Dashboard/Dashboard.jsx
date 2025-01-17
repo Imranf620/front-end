@@ -14,7 +14,6 @@ const Dashboard = () => {
   const {user,loading} = useSelector(state=>state.auth)
   const navigate = useNavigate()
 
-  console.log(user)
 
 
  
@@ -33,7 +32,6 @@ const Dashboard = () => {
     setShowPie(false);
   };
 
-  console.log(user?.percentageUsed)
 
   return (
     <>

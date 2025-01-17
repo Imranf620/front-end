@@ -62,7 +62,6 @@ const MyShared = () => {
     const fetchData = async () => {
       try {
         const response = await dispatch(getFilesSharedByMe());
-        console.log(response.payload.data);
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
       } catch (error) {

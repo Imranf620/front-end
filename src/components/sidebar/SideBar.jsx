@@ -13,7 +13,6 @@ const SideBar = ({handleToggle}) => {
   const { isDarkMode } = useTheme();
 
   const { user } = useSelector((state) => state.auth);
-  console.log(user?.user)
   const location = useLocation();
 
   const sidebarItems = user?.user?.role==="USER" ? [

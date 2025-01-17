@@ -55,7 +55,7 @@ const HomeNav = () => {
       >
         <div className="max-w-screen-xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-xl font-bold transition-all duration-300 transform hover:scale-105">
-            Storify
+            Gofilez
           </h1>
 
           {/* Navigation Links */}

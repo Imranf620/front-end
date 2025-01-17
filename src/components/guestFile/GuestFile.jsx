@@ -1,65 +1,69 @@
-import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { useParams } from 'react-router-dom'
-import { getGuestFile } from '../../features/filesSlice'
-import Loader from '../../pages/Loader/Loader'
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useParams } from "react-router-dom";
+import { getGuestFile } from "../../features/filesSlice";
+import Loader from "../../pages/Loader/Loader";
 
 const GuestFile = () => {
-  const { fileId } = useParams()
-  const dispatch = useDispatch()
+  const { fileId } = useParams();
+  const dispatch = useDispatch();
 
-  const [file, setFile] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [isFileLoading, setIsFileLoading] = useState(true)
+  const [file, setFile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFileLoading, setIsFileLoading] = useState(true);
 
   useEffect(() => {
     const fetchFile = async () => {
       try {
-        const response = await dispatch(getGuestFile(fileId))
-        console.log(response.payload.data)
-        setFile(response.payload.data)
-        setIsLoading(false)
+        const response = await dispatch(getGuestFile(fileId));
+        setFile(response.payload.data);
+        console.log(response.payload.data);
+        setIsLoading(false);
       } catch (error) {
-        console.error(error)
-        setIsLoading(false)
+        console.error(error);
+        setIsLoading(false);
       }
-    }
-    fetchFile()
-  }, [fileId, dispatch])
+    };
+    fetchFile();
+  }, [fileId, dispatch]);
 
-  if (isLoading) return <Loader />
+  if (isLoading) return <Loader />;
 
   if (!file) {
-    return <div>No file found.</div>
+    return <div>No file found.</div>;
   }
 
-  const { fileUrl, name, size, type } = file
+  const { fileUrl, name, size, type } = file;
 
   const handleDownload = async (e) => {
-    e.preventDefault()
-    const response = await fetch(fileUrl)
-    const blob = await response.blob()
-    const link = document.createElement('a')
-    const url = window.URL.createObjectURL(blob)
-    link.href = url
-    link.download = name
-    link.style.display = 'none'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    window.URL.revokeObjectURL(url)
-  }
+    e.preventDefault();
+    const response = await fetch(fileUrl);
+    const blob = await response.blob();
+    const link = document.createElement("a");
+    const url = window.URL.createObjectURL(blob);
+    link.href = url;
+    link.download = name;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  };
 
-  const openModal = () => setIsModalOpen(true)
-  const closeModal = () => setIsModalOpen(false)
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
-  const handleFileLoaded = () => setIsFileLoading(false)
+  const handleFileLoaded = () => setIsFileLoading(false);
 
   return (
     <div className="bg-white bg-opacity-60 p-6 rounded-lg shadow-lg max-w-xs mx-auto">
-      <h3 className="text-xl font-semibold text-center text-gray-800">{name}</h3>
-      <p className="text-sm text-center text-gray-600">Size: {(size/10e6).toFixed(2)} Mb</p>
+      <h3 className="text-xl font-semibold text-center text-gray-800">
+        {name}
+      </h3>
+      <p className="text-sm text-center text-gray-600">
+  Size: {size < 1024 ? `${(size).toFixed(2)} B` : size < 1024 * 1024 ? `${(size / 1024).toFixed(2)} KB` : size < 1024 * 1024 * 1024 ? `${(size / (1024 * 1024)).toFixed(2)} MB` : `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`}
+</p>
 
       <div className="mt-4 text-center space-x-4">
         <button
@@ -91,9 +95,7 @@ const GuestFile = () => {
             </div>
 
             <div className="mt-4 text-center">
-            
-
-              {type.startsWith('image') && (
+              {type.startsWith("image") && (
                 <img
                   src={fileUrl}
                   alt={name}
@@ -102,7 +104,7 @@ const GuestFile = () => {
                 />
               )}
 
-              {type.startsWith('audio') && !isFileLoading && (
+              {type.startsWith("audio") && !isFileLoading && (
                 <audio
                   controls
                   src={fileUrl}
@@ -112,35 +114,49 @@ const GuestFile = () => {
                   Your browser does not support the audio element.
                 </audio>
               )}
-
-              {type.startsWith('video') && !isFileLoading && (
-                <video
-                  controls
-                  src={fileUrl}
-                  className="max-w-full"
-                  onLoadedData={handleFileLoaded}
-                >
-                  Your browser does not support the video element.
-                </video>
+              {type === "application/pdf" && (
+                <div className="mt-4 text-center">
+                  <iframe
+                    src={fileUrl}
+                    className="w-full h-96"
+                    style={{ border: "none" }}
+                    onLoad={handleFileLoaded}
+                  ></iframe>
+                </div>
               )}
 
-              {['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(type) && !isFileLoading && (
-                <iframe
-                  src={fileUrl}
-                  className="w-full h-96"
-                  onLoad={handleFileLoaded}
-                ></iframe>
+              {type.startsWith("video") && (
+                <div className="mt-4 text-center">
+                  <video
+                    controls
+                    className="w-full h-auto max-w-full mx-auto"
+                    style={{
+                      maxWidth: "100%",
+                      height: "auto",
+                      aspectRatio: "16/9",
+                    }}
+                  >
+                    <source src={fileUrl} type="video/mp4" />
+                    Your browser does not support the video element.
+                  </video>
+                </div>
               )}
 
-              {!isFileLoading && !type.startsWith('image') && !type.startsWith('audio') && !type.startsWith('video') && !['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(type) && (
-                <p>Cannot preview this file type</p>
-              )}
+              {!isFileLoading &&
+                !type.startsWith("image") &&
+                !type.startsWith("audio") &&
+                !type.startsWith("video") &&
+                ![
+                  "application/pdf",
+                  "application/msword",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ].includes(type) && <p>Cannot preview this file type</p>}
             </div>
           </div>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default GuestFile
+export default GuestFile;

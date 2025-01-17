@@ -69,7 +69,6 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
     const file = event.target.files[0];
     setSelectedFile(file);
     setOpenDialog(true);
-    console.log("file", file);
   };
 
   const handleConfirmUpload = async () => {
@@ -116,7 +115,6 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
           
         })
       );
-      console.log("result", result);
 
       if (result.payload?.success) {
         toast.success(result.payload.message);

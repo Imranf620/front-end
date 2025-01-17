@@ -42,7 +42,6 @@ const SelectPackage = ({ upgrade = false, onCancel }) => {
   useEffect(() => {
     const fetchPricing = async () => {
       const result = await dispatch(getPricing());
-      console.log(result.payload.data);
       setpackagePrices(result.payload.data);
     };
     fetchPricing();
@@ -220,7 +219,6 @@ const StripePaymentForm = ({ price, setOpenModal }) => {
     if (error) {
       alert(error.message);
     } else {
-      console.log(paymentMethod);
       alert("Payment successful!");
       setOpenModal(false);
     }

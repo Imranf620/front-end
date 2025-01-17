@@ -19,13 +19,11 @@ const ProfileSetting = () => {
   const [email, setEmail] = useState(user?.user?.email || '');
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(user?.user?.image || '');  
-  console.log("imageUrl", imageUrl);
 
   const dispatch = useDispatch();
 
   const handleImageChange = (newImage) => {
     setImage(newImage);
-    console.log(`Image selected: ${newImage}`);
   };
 
   const handleUpdateProfile = async () => {
@@ -44,7 +42,6 @@ const ProfileSetting = () => {
 
         const { url, downloadUrl , publicUrl} = response.data;
 
-        console.log('downloadUrl', downloadUrl)
 
         const s3UploadResponse = await axios.put(url, image, {
           headers: {
@@ -53,7 +50,6 @@ const ProfileSetting = () => {
         });
 
         if (s3UploadResponse.status === 200) {
-          console.log('Image uploaded to S3:', downloadUrl);
           const uploadedImageUrl = publicUrl;
           setImageUrl(publicUrl);
           imageToUpload = uploadedImageUrl;

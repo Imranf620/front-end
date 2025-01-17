@@ -24,7 +24,6 @@ const AllUsers = () => {
                     toast.error(result.payload.message);
                 }
             } catch (error) {
-                console.log(error);
             } finally {
                 setLoading(false);
             }

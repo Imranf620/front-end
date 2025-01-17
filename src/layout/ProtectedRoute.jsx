@@ -31,7 +31,7 @@ const ProtectedRoute = () => {
   if (loading) {
     return <Loader />;
   }
-  return user ? <Outlet /> : <Navigate to="/home" />;
+  return user ? <Outlet /> : <Navigate to="/" />;
 };
 
 export default ProtectedRoute;

@@ -37,7 +37,6 @@ const SingleFile = () => {
       try {
         const response = await dispatch(getSingleFile(id));
 
-        console.log(response);
         setFile(response?.payload?.data || null);
       } catch (error) {
         toast.error(error.message || "Failed to fetch the file");
@@ -50,7 +49,6 @@ const SingleFile = () => {
   const handleView = async () => {
     setSelectedFile(file);
     setViewModalOpen(true);
-    console.log(file);
 
     const res = await dispatch(fileView(file.id));
     if (res.payload?.success) {

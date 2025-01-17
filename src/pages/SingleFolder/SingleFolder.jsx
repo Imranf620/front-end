@@ -78,7 +78,6 @@ const SingleFolder = () => {
       .then((res) => {
         setFolder(res.data.data);
         setFilteredFiles(res.data.data.files);
-        console.log(res.data.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -131,7 +130,6 @@ const SingleFolder = () => {
   };
 
   const handleShareSubfolders = () => {
-    console.log("Sharing subfolders:", selectedSubfolders);
     toast.info("Share functionality is not implemented yet.");
   };
 
@@ -153,7 +151,6 @@ const SingleFolder = () => {
     }
   };
   const handleFileSelect = (fileId) => {
-    console.log("fileId", fileId);
     setSelectedFiles((prevSelectedFiles) => {
       if (prevSelectedFiles.includes(fileId)) {
         return prevSelectedFiles.filter((id) => id !== fileId);

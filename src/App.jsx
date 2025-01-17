@@ -46,8 +46,8 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/home/:fileId" element={<HomePage />} />
-        <Route path="/home" element={<HomePage />} />
+        <Route path="/:fileId" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
 
@@ -57,7 +57,7 @@ const App = () => {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Layout />}>
-            <Route path="" element={<Dashboard />} />
+            <Route path="home" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="dashboard/:type" element={<Storage />} />
             {/* <Route path="packages" element={<Packages />} /> */}

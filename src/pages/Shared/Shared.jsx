@@ -116,7 +116,6 @@ const Shared = () => {
 
   const handleDownload = async (file) => {
     try {
-      console.log("file", file);
 
       const response = await fetch(file?.path);
       const blob = await response.blob();

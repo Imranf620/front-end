@@ -95,7 +95,6 @@ const Bin = () => {
 
   const handleDownload = async (file) => {
     try {
-      console.log("file", file);
 
       const response = await fetch(file?.file?.path);
       const blob = await response.blob();
@@ -128,7 +127,6 @@ const Bin = () => {
 
     try {
       const response = await dispatch(deleteTrash(selectedFiles));
-      console.log(response);
       if (response.payload?.success) {
         toast.success("File deleted successfully");
         setDeleteModalOpen(false);
@@ -142,7 +140,6 @@ const Bin = () => {
         dispatch(fetchMyProfile());
       } else {
         toast.error(response.payload.message);
-        console.log(response.payload);
       }
     } catch (error) {
       toast.error(error.message || "Failed to delete file");
@@ -151,7 +148,6 @@ const Bin = () => {
 
   const handleRestoreFile = async (file) => {
     try {
-      console.log(file);
       const response = await dispatch(restoreFromBin(file.id));
       if (response.payload?.success) {
         toast.success("File restored successfully");

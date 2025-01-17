@@ -82,7 +82,7 @@ const ForgotPassword = () => {
     <div className="w-screen h-screen flex">
       <section className="w-full h-max md:h-auto flex flex-col justify-center items-center bg-gray-50 p-10">
         <div className="w-3/4 max-w-md flex flex-col gap-6">
-          <h2 className="text-3xl font-bold mb-4">Storify</h2>
+          <h2 className="text-3xl font-bold mb-4">Gofilez</h2>
           <h2 className="text-xl font-semibold mb-2">
             {step === 1 && "Forgot Password"}
             {step === 2 && "Enter OTP"}

@@ -34,11 +34,10 @@ const HomePage = () => {
   const [emails, setEmails] = useState([""]);
   const [loading, setLoading] = useState(false);
   const baseApi = import.meta.env.VITE_API_URL;
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
   const [progress, setProgress] = useState(0);
 
-
-  const {fileId} = useParams()
+  const { fileId } = useParams();
 
   const handleEmailChange = (index, event) => {
     const updatedEmails = [...emails];
@@ -84,11 +83,9 @@ const HomePage = () => {
   };
 
   const handleShare = async () => {
-
-    let fileId ;
+    let fileId;
     setLoading(true);
-    
-    
+
     try {
       const response = await axios.post(
         `${baseApi}/pre-ass-url`,
@@ -99,9 +96,9 @@ const HomePage = () => {
         { withCredentials: true }
       );
 
-      const { url, downloadUrl , publicUrl} = response.data;
+      const { url, downloadUrl, publicUrl } = response.data;
       setIsShareDialogOpen(false);
-   
+
       const uploadResponse = await axios.put(url, selectedFile, {
         headers: {
           "Content-Type": selectedFile.type,
@@ -109,29 +106,28 @@ const HomePage = () => {
         onUploadProgress: (progressEvent) => {
           const { loaded, total } = progressEvent;
           const progressPercentage = Math.round((loaded * 100) / total);
-          setProgress(progressPercentage); 
+          setProgress(progressPercentage);
         },
-
       });
       if (uploadResponse.status === 200) {
-        let res  =  await dispatch(uploadGuestFile({selectedFile,publicUrl}))
+        let res = await dispatch(uploadGuestFile({ selectedFile, publicUrl }));
         setProgress(0);
         setIsShareDialogOpen(false);
-        fileId= res.payload.data.id
-        if(res.payload.success==false) {
-          toast.error(res.payload.message)
-          return
+        fileId = res.payload.data.id;
+        if (res.payload.success == false) {
+          toast.error(res.payload.message);
+          return;
         }
       }
     } catch (error) {
       setProgress(0);
-    } finally{
+    } finally {
       setLoading(false);
     }
 
-  
-
-    const sharedUrl = customUrl ? `${customUrl}` : `${import.meta.env.VITE_FRONTEND_API_URL}/home/${fileId}`;
+    const sharedUrl = customUrl
+      ? `${customUrl}`
+      : `${import.meta.env.VITE_FRONTEND_API_URL}/${fileId}`;
 
     navigator.clipboard.writeText(sharedUrl).then(() => {
       toast.success("Link copied to clipboard!");
@@ -147,7 +143,6 @@ const HomePage = () => {
         publicUrl,
       });
       toast.success(res.data.message);
-
     }
 
     setIsShareDialogOpen(false);
@@ -191,7 +186,6 @@ const HomePage = () => {
       delay: 0.7,
       ease: "power4.out",
     });
-   
 
     gsap.utils
       .toArray(
@@ -230,9 +224,14 @@ const HomePage = () => {
           Get to work, with a lot less work
         </h1>
         <h4 className="hero-subheading text-xl mb-8 opacity-100">
-          Storify delivers tools that help you move your work forward faster,
+          Gofilez delivers tools that help you move your work forward faster,
           keep it safe, and let you collaborate with ease.
         </h4>
+        <div className="my-6">
+
+        {fileId && <GuestFile />}
+        </div>
+
         <div className="flex gap-6 items-center mx-auto w-full justify-center pb-20">
           <button className="hero-button  px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-400 transition-all duration-300 ease-in-out">
             Signup Free
@@ -245,9 +244,8 @@ const HomePage = () => {
           </div>
         </div>
 
-        {fileId &&<GuestFile/> }
 
-        <div className="mb-16">
+      {!fileId &&   <div className="mb-16">
           <div
             className={`border-2 ${
               isDragging
@@ -298,14 +296,14 @@ const HomePage = () => {
           )}
           <p className="text-sm text-gray-500 mt-2">(Max file size: 15 GB)</p>
           {progress > 0 && (
-          <div className="mt-4">
-            <LinearProgress variant="determinate" value={progress} />
-            <p className="text-center text-sm mt-2">{progress}%</p>
-          </div>
-        )}
-        </div>
+            <div className="mt-4">
+              <LinearProgress variant="determinate" value={progress} />
+              <p className="text-center text-sm mt-2">{progress}%</p>
+            </div>
+          )}
+        </div>}
 
-        <div className="relative mx-auto w-[80%] hero-img">
+        <div className="relative mt-20 mx-auto w-[80%] hero-img">
           <img
             src="https://fjord.dropboxstatic.com/warp/conversion/dropbox/warp/en-us/test/homepageredesign2024/hero/all-files-desktop.png?id=75a3b2c3-59ab-45f6-bdaa-fa64bac618e7&width=2880&output_type=png"
             alt="Desktop Illustration"
@@ -373,9 +371,9 @@ const HomePage = () => {
               variant="contained"
               color="primary"
               onClick={handleShare}
-              disabled={!selectedFile || loading} 
+              disabled={!selectedFile || loading}
             >
-                {loading ? 'Generating URL...' : 'Share'}
+              {loading ? "Generating URL..." : "Share"}
             </Button>
           </div>
         </div>
