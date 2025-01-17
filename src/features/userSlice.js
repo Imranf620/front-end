@@ -4,11 +4,12 @@ const baseApi = import.meta.env.VITE_API_URL;
 
 
 export const login = createAsyncThunk("/login", async(data,{rejectWithValue})=>{
-    
+
     try {
         const res = await axios.post(`${baseApi}/user/login`, data, {
             withCredentials: true, 
         })
+        console.log(res)
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response.data);

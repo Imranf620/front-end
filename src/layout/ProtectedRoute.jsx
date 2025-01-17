@@ -6,6 +6,7 @@ import Loader from "../pages/Loader/Loader";
 
 const ProtectedRoute = () => {
   const [loading, setLoading] = useState(true);
+  
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
 
@@ -14,7 +15,7 @@ const ProtectedRoute = () => {
       try {
         const result = await dispatch(fetchMyProfile());
         if (result.payload?.data?.user) {
-          // Set the user only if the response is valid
+       
           setLoading(false);
         } else {
           setLoading(false);
