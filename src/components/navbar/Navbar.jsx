@@ -57,7 +57,7 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
     try {
       const result = await dispatch(logout());
       if (result.payload.success === true) {
-        navigate("/login");
+        navigate("/");
       }
       toast.success(result.payload.message);
     } catch (error) {
