@@ -47,6 +47,8 @@ const App = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/:fileId" element={<HomePage />} />
+        <Route path="/:fileId/:any" element={<HomePage />} />
+
         <Route path="/" element={<HomePage />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
@@ -66,7 +68,7 @@ const App = () => {
             <Route path="dashboard/shared/:id" element={<SingleFile />} />
             <Route path="dashboard/bin/all" element={<Bin />} />
             <Route path="dashboard/folders/all" element={<Folders />} />
-            <Route path="dashboard/folders/all/:id" element={<SingleFolder />} />
+            <Route path="dashboard/folders/single" element={<SingleFolder />} />
 
 
             {/* Admin Routes */}

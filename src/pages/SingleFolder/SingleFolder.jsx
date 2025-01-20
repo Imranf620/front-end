@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   CircularProgress,
@@ -63,10 +63,13 @@ const SingleFolder = () => {
   const [selectFile, setSelectFile] = useState(false);
   const baseApi = import.meta.env.VITE_API_URL;
   const FRONT_END_URL = import.meta.env.VITE_FRONTEND_API_URL;
-  const { id } = useParams();
+  const location = useLocation()
+  // const { id } = useParams();
+  const id = location.state.folderId;
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
+  console.log(location.state.folderId)
 
   useEffect(() => {
     fetchFolderData();
@@ -277,6 +280,7 @@ const SingleFolder = () => {
     try {
       setShareLoadings(true);
       const result = await dispatch(shareFile(shareData));
+      console.log(result.payload.data)
 
       if (result?.payload?.success) {
         toast.success(
@@ -288,7 +292,7 @@ const SingleFolder = () => {
         );
 
         if (shareOption === "public") {
-          const shareUrl = `${FRONT_END_URL}/dashboard/shared/${shareData?.fileId}`;
+          const shareUrl = `${FRONT_END_URL}/${result.payload.data?.file.random}`;
           navigator.clipboard.writeText(shareUrl);
           toast.success("File link copied to clipboard!");
         }

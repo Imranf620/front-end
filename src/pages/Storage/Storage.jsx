@@ -60,6 +60,7 @@ const Storage = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectFile, setSelectFile] = useState(false);
+  const [shareLoadings, setShareLoadings] = useState(false)
 
   const FRONT_END_URL = import.meta.env.VITE_FRONTEND_API_URL;
 
@@ -169,6 +170,7 @@ const Storage = () => {
     };
 
     try {
+      setShareLoadings(true);
       const result = await dispatch(shareFile(shareData));
 
       if (result?.payload?.success) {
@@ -181,7 +183,7 @@ const Storage = () => {
         );
 
         if (shareOption === "public") {
-          const shareUrl = `${FRONT_END_URL}/dashboard/shared/${shareData.fileId}`;
+          const shareUrl = `${FRONT_END_URL}/${result.payload.data.file.random}`;
           navigator.clipboard.writeText(shareUrl);
           toast.success("File link copied to clipboard!");
         }
@@ -191,6 +193,7 @@ const Storage = () => {
     } catch (error) {
       toast.error("Failed to share file");
     } finally {
+      setShareLoadings(false);
       setShareModalOpen(false);
     }
   };
@@ -683,8 +686,8 @@ const Storage = () => {
           <Button onClick={() => setShareModalOpen(false)} color="secondary">
             Cancel
           </Button>
-          <Button onClick={handleShareFile} color="primary">
-            Share
+          <Button onClick={handleShareFile} color="primary" disabled={shareLoadings}>
+          {shareLoadings ? <CircularProgress size={24} /> : "Share"}
           </Button>
         </DialogActions>
       </Dialog>

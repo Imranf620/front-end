@@ -217,7 +217,7 @@ export const getGuestFile = createAsyncThunk(
   "/guest/file",
   async (fileId, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`${baseApi}/files/guest/${fileId}`, {
+      const res = await axios.post(`${baseApi}/files/guest`,{fileId}, {
         withCredentials: true,
       });
       return res.data;

@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { getGuestFile } from "../../features/filesSlice";
 import Loader from "../../pages/Loader/Loader";
 
 const GuestFile = () => {
-  const { fileId } = useParams();
+  // const { fileId } = useParams();
+    const location = useLocation()
+    const fileId= location.pathname.replace(/^\/+/, "")
+  
   const dispatch = useDispatch();
 
   const [file, setFile] = useState(null);
@@ -16,6 +19,7 @@ const GuestFile = () => {
   useEffect(() => {
     const fetchFile = async () => {
       try {
+        console.log("file loading",fileId)
         const response = await dispatch(getGuestFile(fileId));
         setFile(response.payload.data);
         setIsLoading(false);

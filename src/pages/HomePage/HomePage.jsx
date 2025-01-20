@@ -1,6 +1,6 @@
 import { ArrowCircleRight } from "@mui/icons-material";
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import Footer from "../../components/footer/Footer";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -37,7 +37,10 @@ const HomePage = () => {
   const baseApi = import.meta.env.VITE_API_URL;
   const dispatch = useDispatch();
 
-  const { fileId } = useParams();
+  // const { fileId } = useParams();
+  const location = useLocation()
+  const fileId= location.pathname.replace(/^\/+/, "")
+
 
   const handleEmailChange = (index, event) => {
     const updatedEmails = [...emails];
