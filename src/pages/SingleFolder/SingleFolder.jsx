@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import {
   CircularProgress,
@@ -64,7 +64,8 @@ const SingleFolder = () => {
   const [selectFile, setSelectFile] = useState(false);
   const baseApi = import.meta.env.VITE_API_URL;
   const FRONT_END_URL = import.meta.env.VITE_API_URL;
-  const { id } = useParams();
+  const location = useLocation()
+  const id  =  location.state.folderId
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();

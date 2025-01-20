@@ -66,7 +66,7 @@ const App = () => {
             <Route path="dashboard/shared/:id" element={<SingleFile />} />
             <Route path="dashboard/bin/all" element={<Bin />} />
             <Route path="dashboard/folders/all" element={<Folders />} />
-            <Route path="dashboard/folders/all/:id" element={<SingleFolder />} />
+            <Route path="dashboard/folders/single" element={<SingleFolder />} />
 
 
             {/* Admin Routes */}
