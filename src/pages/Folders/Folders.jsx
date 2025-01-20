@@ -74,7 +74,7 @@ const Folders = () => {
 
   const openFolder = (folderId) => {
     if (!isSelecting) {
-      navigate(`/dashboard/folders/single`, {state:{id:folderId}});
+      navigate(`/dashboard/folders/all/${folderId}`);
     }
   };
 
