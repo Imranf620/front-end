@@ -33,9 +33,10 @@ const HomePage = () => {
   const [customUrl, setCustomUrl] = useState("");
   const [emails, setEmails] = useState([""]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [guestFile, setGuestFile] = useState();
   const baseApi = import.meta.env.VITE_API_URL;
   const dispatch = useDispatch();
-  const [progress, setProgress] = useState(0);
 
   const { fileId } = useParams();
 
@@ -113,8 +114,19 @@ const HomePage = () => {
         let res = await dispatch(uploadGuestFile({ selectedFile, publicUrl }));
         setProgress(0);
         setIsShareDialogOpen(false);
-        fileId = res.payload.data.id;
-        if (res.payload.success == false) {
+        setGuestFile(res.payload.data);
+        const random = res.payload.data.random;
+        if (res.payload.success) {
+          const sharedUrl = customUrl
+            ? `${customUrl}`
+            : `${import.meta.env.VITE_FRONTEND_API_URL}/${random}`;
+
+          // Copy URL to clipboard
+          navigator.clipboard.writeText(sharedUrl).then(() => {
+            toast.success("Link copied to clipboard!");
+          });
+        }
+        if (res.payload.success === false) {
           toast.error(res.payload.message);
           return;
         }
@@ -124,14 +136,6 @@ const HomePage = () => {
     } finally {
       setLoading(false);
     }
-
-    const sharedUrl = customUrl
-      ? `${customUrl}`
-      : `${import.meta.env.VITE_FRONTEND_API_URL}/${fileId}`;
-
-    navigator.clipboard.writeText(sharedUrl).then(() => {
-      toast.success("Link copied to clipboard!");
-    });
 
     if (shareOption === "public") {
       toast.info(`File shared publicly.`);
@@ -227,10 +231,7 @@ const HomePage = () => {
           Gofilez delivers tools that help you move your work forward faster,
           keep it safe, and let you collaborate with ease.
         </h4>
-        <div className="my-6">
-
-        {fileId && <GuestFile />}
-        </div>
+        <div className="my-6">{fileId && <GuestFile />}</div>
 
         <div className="flex gap-6 items-center mx-auto w-full justify-center pb-20">
           <button className="hero-button  px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-400 transition-all duration-300 ease-in-out">
@@ -244,64 +245,120 @@ const HomePage = () => {
           </div>
         </div>
 
-
-      {!fileId &&   <div className="mb-16">
-          <div
-            className={`border-2 ${
-              isDragging
-                ? "border-blue-500 bg-blue-50"
-                : "border-dashed border-gray-300"
-            } rounded-lg p-6 flex flex-col items-center justify-center transition-all duration-300`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <label
-              htmlFor="file"
-              className="flex flex-col items-center cursor-pointer hover:text-blue-500 transition-all"
+        {!fileId && (
+          <div className="mb-16">
+            <div
+              className={`border-2 ${
+                isDragging
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-dashed border-gray-300"
+              } rounded-lg p-6 flex flex-col items-center justify-center transition-all duration-300`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-12 w-12 text-gray-400 mb-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
+              <label
+                htmlFor="file"
+                className="flex flex-col items-center cursor-pointer hover:text-blue-500 transition-all"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              <span className="text-gray-500 text-sm mb-2">
-                Drag & drop files here
-              </span>
-              <span className="text-sm text-blue-500 underline">
-                or click to upload
-              </span>
-            </label>
-            <input
-              type="file"
-              id="file"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </div>
-          {selectedFile.fileName && (
-            <p className="text-sm text-gray-500 mt-2">
-              Uploaded:{" "}
-              <span className="font-medium">{selectedFile.fileName}</span>
-            </p>
-          )}
-          <p className="text-sm text-gray-500 mt-2">(Max file size: 15 GB)</p>
-          {progress > 0 && (
-            <div className="mt-4">
-              <LinearProgress variant="determinate" value={progress} />
-              <p className="text-center text-sm mt-2">{progress}%</p>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-12 w-12 text-gray-400 mb-2"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                <span className="text-gray-500 text-sm mb-2">
+                  Drag & drop files here
+                </span>
+                <span className="text-sm text-blue-500 underline">
+                  or click to upload
+                </span>
+              </label>
+              <input
+                type="file"
+                id="file"
+                className="hidden"
+                onChange={handleFileChange}
+              />
             </div>
-          )}
-        </div>}
+            {selectedFile.fileName && (
+              <p className="text-sm text-gray-500 mt-2">
+                Uploaded:{" "}
+                <span className="font-medium">{selectedFile.fileName}</span>
+              </p>
+            )}
+            <p className="text-sm text-gray-500 mt-2">(Max file size: 15 GB)</p>
+            {progress > 0 && (
+              <div className="mt-4">
+                <LinearProgress variant="determinate" value={progress} />
+                <p className="text-center text-sm mt-2">{progress}%</p>
+              </div>
+            )}
+
+            {guestFile && (
+              <Dialog open={true} onClose={() => setGuestFile(null)}>
+                <div className="p-6 bg-white rounded-lg shadow-lg">
+                  <h2 className="text-2xl font-semibold text-center text-indigo-600 mb-4">
+                    Success! Your file has been uploaded.
+                  </h2>
+                  <p className="text-center text-gray-600 mb-4">
+                    Your file has been successfully uploaded. You can access it
+                    using the link below:
+                  </p>
+                  <div className="mb-6 text-center">
+                    <a
+                      href={guestFile.publicUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      {import.meta.env.VITE_FRONTEND_API_URL}/{guestFile.random}
+                    </a>
+                  </div>
+                  <div className="flex justify-center space-x-4">
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => {
+                        const urlToCopy = `${
+                          import.meta.env.VITE_FRONTEND_API_URL
+                        }/${guestFile.random}`;
+                        navigator.clipboard
+                          .writeText(urlToCopy)
+                          .then(() => {
+                            toast.success("Link copied to clipboard!");
+                          })
+                          .catch(() => {
+                            toast.error("Failed to copy the link.");
+                          });
+                      }}
+                      className="flex items-center space-x-2"
+                    >
+                      <ArrowCircleRight className="mr-2" />
+                      <span>Copy URL</span>
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => setGuestFile(null)}
+                      className="flex items-center space-x-2"
+                    >
+                      <span>Close</span>
+                    </Button>
+                  </div>
+                </div>
+              </Dialog>
+            )}
+          </div>
+        )}
 
         <div className="relative mt-20 mx-auto w-[80%] hero-img">
           <img

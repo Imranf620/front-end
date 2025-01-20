@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -25,6 +25,7 @@ import { toast } from "react-toastify";
 import FolderDialog from "../../components/FolderDialog/FolderDialog";
 import {
   deleteFile,
+  editFileName,
   fileDownload,
   fileView,
   shareFile,
@@ -34,6 +35,7 @@ import { useDispatch } from "react-redux";
 import SEO from "../../components/SEO/SEO";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
 import { useTheme } from "../../context/ThemeContext";
+import { reFetchContext } from "../../context/ReFetchContext";
 
 const SingleFolder = () => {
   const [folder, setFolder] = useState(null);
@@ -66,6 +68,8 @@ const SingleFolder = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isDarkMode } = useTheme();
+    const { handleRefetch } = useContext(reFetchContext);
+  
 
   useEffect(() => {
     fetchFolderData();

@@ -45,7 +45,7 @@ const SignUp = () => {
         ? toast.error(response?.message)
         : toast.success(response?.message);
     }
-    if (user) navigate("/");
+    if (user) navigate("/home");
   }, [response, user]);
 
   return (
