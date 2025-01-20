@@ -47,6 +47,7 @@ const SingleFolder = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [refetch, setRefetch] = useState(false);
   const [filteredFiles, setFilteredFiles] = useState([]);
+  const [shareLoadings, setShareLoadings] = useState(false);
 
   const [renameModalOpen, setRenameModalOpen] = useState(false);
   const [renameFileData, setRenameFileData] = useState(null);
@@ -61,7 +62,7 @@ const SingleFolder = () => {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectFile, setSelectFile] = useState(false);
   const baseApi = import.meta.env.VITE_API_URL;
-  const FRONT_END_URL = import.meta.env.VITE_API_URL;
+  const FRONT_END_URL = import.meta.env.VITE_FRONTEND_API_URL;
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -274,6 +275,7 @@ const SingleFolder = () => {
     };
 
     try {
+      setShareLoadings(true);
       const result = await dispatch(shareFile(shareData));
 
       if (result?.payload?.success) {
@@ -298,6 +300,7 @@ const SingleFolder = () => {
       console.error("Error sharing file:", error);
     } finally {
       setShareModalOpen(false);
+      setShareLoadings(false);
     }
   };
 
@@ -733,8 +736,16 @@ const SingleFolder = () => {
             </div>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setShareModalOpen(false)} color="secondary">
-              Cancel
+            <Button
+              onClick={() => setShareModalOpen(false)}
+              color="secondary"
+              disabled={shareLoadings}
+            >
+              {shareLoadings ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                "Share"
+              )}
             </Button>
             <Button onClick={handleShareFile} color="primary">
               Share

@@ -41,6 +41,7 @@ const Shared = () => {
   const [page, setPage] = useState(1);
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
 
   const { refetch } = useContext(reFetchContext);
 
@@ -53,11 +54,14 @@ const Shared = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setDataLoading(true);
         const response = await dispatch(getAllAccessibleFiles());
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
       } catch (error) {
         toast.error(error.message || "Failed to fetch files");
+      }finally{
+        setDataLoading(false);
       }
     };
     fetchData();
@@ -207,7 +211,7 @@ const Shared = () => {
         <Typography variant="h6" sx={{ marginBottom: 2 }}>
           Files:
         </Typography>
-        {loading ? (
+        {loading  || dataLoading ? (
           <Box
             sx={{
               display: "flex",

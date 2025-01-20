@@ -23,6 +23,7 @@ import { fileDownload, fileView } from "./../../features/filesSlice";
 const SingleFile = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [fetchLoadings, setFetchLoadings] = useState(false)
 
   const { isDarkMode } = useTheme();
   const { id } = useParams();
@@ -35,11 +36,15 @@ const SingleFile = () => {
   useEffect(() => {
     const fetchFile = async () => {
       try {
+        setFetchLoadings(true);
         const response = await dispatch(getSingleFile(id));
 
         setFile(response?.payload?.data || null);
+        console.log(response);
       } catch (error) {
         toast.error(error.message || "Failed to fetch the file");
+      }finally{
+        setFetchLoadings(false);
       }
     };
     fetchFile();
@@ -94,7 +99,7 @@ const SingleFile = () => {
         File Details
       </Typography>
 
-      {loading ? (
+      {loading || fetchLoadings ? (
         <Box
           sx={{
             display: "flex",

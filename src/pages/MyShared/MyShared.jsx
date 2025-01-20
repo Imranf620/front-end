@@ -44,7 +44,7 @@ const MyShared = () => {
   const [sortBy, setSortBy] = useState("size");
   const [orderDirection, setOrderDirection] = useState("asc");
   const [page, setPage] = useState(1);
-
+  const [fetchLoadings, setFetchLoadings] = useState(false)
   const { refetch, handleRefetch } = useContext(reFetchContext);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareOption, setShareOption] = useState("public");
@@ -61,11 +61,14 @@ const MyShared = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setFetchLoadings(true);
         const response = await dispatch(getFilesSharedByMe());
         setAllData(response?.payload?.data || []);
         setFilteredFiles(response?.payload?.data || []);
       } catch (error) {
         toast.error(error.message || "Failed to fetch files");
+      }finally{
+        setFetchLoadings(false);
       }
     };
     fetchData();
@@ -268,7 +271,7 @@ const MyShared = () => {
       <Typography variant="h6" sx={{ marginBottom: 2 }}>
         Files:
       </Typography>
-      {loading ? (
+      {loading || fetchLoadings ? (
         <Box
           sx={{
             display: "flex",
@@ -446,7 +449,7 @@ const MyShared = () => {
                 height="500px"
                 type="application/pdf"
               />
-            ) : selectedFile.type.startsWith("video") ? (
+            ) : selectedFile?.type?.startsWith("video") ? (
               <video controls style={{ width: "100%", height: "auto" }}>
                 <source src={selectedFile.path} type={selectedFile.type} />
                 Your browser does not support the video tag.
