@@ -97,6 +97,18 @@ export const updateProfile = createAsyncThunk("/update/profile", async (data, { 
 })
 
 
+export const updatePassword =  createAsyncThunk("/password/update", async(data, {rejectWithValue})=>{
+    try {
+        console.log("update password", data)
+        const res = await axios.put(`${baseApi}/user/update/password`, data, {
+            withCredentials: true, 
+        })
+        return res.data;
+    } catch (error) {
+        return rejectWithValue(error.response.data);
+    }
+})
+
 
   
 

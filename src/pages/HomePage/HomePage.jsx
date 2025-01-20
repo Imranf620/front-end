@@ -29,7 +29,6 @@ const HomePage = () => {
   const [selectedFile, setSelectedFile] = useState({});
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [shareOption, setShareOption] = useState("public");
-  const [email, setEmail] = useState("");
   const [customUrl, setCustomUrl] = useState("");
   const [emails, setEmails] = useState([""]);
   const [loading, setLoading] = useState(false);
@@ -138,7 +137,7 @@ const HomePage = () => {
     }
 
     if (shareOption === "public") {
-      toast.info(`File shared publicly.`);
+      // toast.info(`File shared publicly.`);
     } else {
       toast.info(`File shared with email(s): ${emails.join(", ")}`);
       const res = await axios.post(`${baseApi}/mail`, {
@@ -163,80 +162,30 @@ const HomePage = () => {
 
     window.addEventListener("scroll", handleScroll);
 
-    gsap.from(".hero-heading", {
-      opacity: 100,
-      y: -50,
-      duration: 1,
-      ease: "power4.out",
-    });
-    gsap.from(".hero-subheading", {
-      opacity: 0,
-      y: -30,
-      duration: 1,
-      delay: 0.3,
-      ease: "power4.out",
-    });
-    gsap.from(".hero-button", {
-      opacity: 100,
-      y: 0,
-      duration: 1,
-      delay: 0.5,
-      ease: "power4.out",
-    });
-    gsap.from(".hero-img", {
-      opacity: 0,
-      x: -50,
-      duration: 1,
-      delay: 0.7,
-      ease: "power4.out",
-    });
-
-    gsap.utils
-      .toArray(
-        ".hero-heading, .hero-subheading, .hero-button, .hero-img, .content-section"
-      )
-      .forEach((el) => {
-        gsap.from(el, {
-          scrollTrigger: {
-            trigger: el,
-            start: "top 80%",
-            end: "top 50%",
-            scrub: true,
-            markers: false,
-          },
-          opacity: 0,
-          y: 30,
-          duration: 1,
-          ease: "power4.out",
-        });
-      });
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
   return (
-    <>
-      <HomeNav />
+    <div className="flex bg-black flex-col min-h-screen">
+      <header>
+        <HomeNav />
+      </header>
       <div
         className={`${
           isScrolled ? "bg-white text-black" : "bg-black text-white"
-        } px-6 pt-16 text-center transition-all duration-500 ease-in-out`}
+        } h-full px-6 pt-16 text-center transition-all duration-500 ease-in-out`}
       >
-        <h1 className="hero-heading text-4xl font-bold mt-40 opacity-100">
-          Get to work, with a lot less work
-        </h1>
-        <h4 className="hero-subheading text-xl mb-8 opacity-100">
-          Gofilez delivers tools that help you move your work forward faster,
-          keep it safe, and let you collaborate with ease.
-        </h4>
         <div className="my-6">{fileId && <GuestFile />}</div>
 
         <div className="flex gap-6 items-center mx-auto w-full justify-center pb-20">
-          <button className="hero-button  px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-400 transition-all duration-300 ease-in-out">
+          <Link
+            to="/signup"
+            className="hero-button  px-6 py-3 bg-blue-500 text-white rounded-full hover:bg-blue-400 transition-all duration-300 ease-in-out"
+          >
             Signup Free
-          </button>
+          </Link>
           <div className="flex items-center mt-4">
             <u className="cursor-pointer text-lg hover:text-blue-500 transition-all duration-300">
               <Link to="/pricing">Find your plan</Link>
@@ -246,7 +195,7 @@ const HomePage = () => {
         </div>
 
         {!fileId && (
-          <div className="mb-16">
+          <div className="">
             <div
               className={`border-2 ${
                 isDragging
@@ -359,19 +308,6 @@ const HomePage = () => {
             )}
           </div>
         )}
-
-        <div className="relative mt-20 mx-auto w-[80%] hero-img">
-          <img
-            src="https://fjord.dropboxstatic.com/warp/conversion/dropbox/warp/en-us/test/homepageredesign2024/hero/all-files-desktop.png?id=75a3b2c3-59ab-45f6-bdaa-fa64bac618e7&width=2880&output_type=png"
-            alt="Desktop Illustration"
-            className="transition-all duration-500 transform hover:scale-105"
-          />
-          <img
-            className="absolute right-auto md:-right-20 h-[80%] top-1/2 -translate-y-1/2 transition-all duration-500 transform hover:scale-105"
-            src="https://fjord.dropboxstatic.com/warp/conversion/dropbox/warp/en-us/test/homepageredesign2024/hero/all-files-laptop.png?id=75a3b2c3-59ab-45f6-bdaa-fa64bac618e7&width=2880&output_type=png"
-            alt="Laptop Illustration"
-          />
-        </div>
       </div>
 
       <Dialog open={isShareDialogOpen} onClose={handleShareDialogClose}>
@@ -435,9 +371,11 @@ const HomePage = () => {
           </div>
         </div>
       </Dialog>
-
-      <Footer />
-    </>
+      <footer className="mt-auto">
+        <hr />
+        <Footer />
+      </footer>
+    </div>
   );
 };
 
