@@ -16,6 +16,14 @@ import {
   DialogTitle,
   LinearProgress,
   TextField,
+  TableContainer,
+  Table,
+  TableHead,
+  IconButton,
+  Paper,
+  TableRow,
+  TableCell,
+  TableBody,
 } from "@mui/material";
 import { MdFolder } from "react-icons/md";
 
@@ -34,6 +42,9 @@ import { useDispatch } from "react-redux";
 import SEO from "../../components/SEO/SEO";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
 import { useTheme } from "../../context/ThemeContext";
+import GridViewIcon from "@mui/icons-material/GridView";
+import TableRowsIcon from "@mui/icons-material/TableRows";
+
 
 const SingleFolder = () => {
   const [folder, setFolder] = useState(null);
@@ -61,9 +72,13 @@ const SingleFolder = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [selectFile, setSelectFile] = useState(false);
+    const [viewMode, setViewMode] = useState(
+      () => localStorage.getItem("viewMode") || "grid"
+    );
   const baseApi = import.meta.env.VITE_API_URL;
   const FRONT_END_URL = import.meta.env.VITE_FRONTEND_API_URL;
   const location = useLocation()
+
   // const { id } = useParams();
   const id = location.state.folderId;
   const navigate = useNavigate();
@@ -88,6 +103,12 @@ const SingleFolder = () => {
         console.error("Error fetching folder:", error);
         setLoading(false);
       });
+  };
+
+  const handleToggleView = () => {
+    const newMode = viewMode === "grid" ? "table" : "grid";
+    setViewMode(newMode);
+    localStorage.setItem("viewMode", newMode);
   };
 
   const toggleSubfolderSelection = (subfolderId) => {
@@ -521,7 +542,11 @@ const SingleFolder = () => {
                 multiple
               />
             </Button>
-
+            <Box display="flex" justifyContent="flex-end" mb={2}>
+              <IconButton onClick={handleToggleView}>
+                {viewMode === "grid" ? <TableRowsIcon /> : <GridViewIcon />}
+              </IconButton>
+            </Box>
           </Box>
         </div>
 
@@ -557,16 +582,11 @@ const SingleFolder = () => {
       </Dialog>
 
         {/* Subfolder display */}
-        <div className="flex flex-wrap  items-center gap-4">
+        {viewMode === 'grid' ? (
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Subfolders */}
           {folder?.children?.map((subfolder) => (
-            <Grid
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              key={subfolder.id}
-              className="relative"
-            >
+            <Grid item xs={12} sm={6} md={4} key={subfolder.id} className="relative">
               <Card className="cursor-pointer h-[105px] w-[250px] md:w-[300px]">
                 {isSelecting && (
                   <div className="absolute top-2 right-2">
@@ -579,12 +599,8 @@ const SingleFolder = () => {
                 <CardContent onClick={() => openFolder(subfolder.id)}>
                   <div className="flex items-center space-x-3">
                     <MdFolder size={40} className="text-[#b21ad8]" />
-                    <Typography
-                      variant="h6"
-                      className="font-semibold truncate"
-                      style={{ maxWidth: "100%" }}
-                    >
-                      {subfolder.name || "New Folder"}
+                    <Typography variant="h6" className="font-semibold truncate" style={{ maxWidth: '100%' }}>
+                      {subfolder.name || 'New Folder'}
                     </Typography>
                   </div>
                   <Typography variant="body2" color="textSecondary">
@@ -595,51 +611,92 @@ const SingleFolder = () => {
             </Grid>
           ))}
 
-          {filteredFiles?.length > 0 &&
-            folder.files.map((file) => (
-              <Grid
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                key={file.id}
-                className="relative"
-              >
-                <Card className="cursor-pointer h-[105px] w-[250px] md:w-[300px] ">
-                  {isSelecting && (
-                    <div className="absolute top-2 right-2">
-                      <Checkbox
-                        checked={selectedFiles.includes(file.id)}
-                        onChange={() => handleFileSelect(file.id)}
-                      />
-                    </div>
-                  )}
-                  <CardContent>
-                    <div className="flex items-center space-x-3">
-                      <ArticleIcon size={40} className="text-[#b21ad8]" />
-                      <Typography
-                        variant="h6"
-                        className="font-semibold truncate"
-                        style={{ maxWidth: "100%" }}
-                      >
-                        {file.name || "Untitled File"}
-                      </Typography>
-                    </div>
-                    <Typography variant="body2" color="textSecondary">
-                      {(file.size / 1e6).toFixed(2)} MB
+          {/* Files */}
+          {filteredFiles?.length > 0 && folder.files.map((file) => (
+            <Grid item xs={12} sm={6} md={4} key={file.id} className="relative">
+              <Card className="cursor-pointer h-[105px] w-[250px] md:w-[300px]">
+                {isSelecting && (
+                  <div className="absolute top-2 right-2">
+                    <Checkbox
+                      checked={selectedFiles.includes(file.id)}
+                      onChange={() => handleFileSelect(file.id)}
+                    />
+                  </div>
+                )}
+                <CardContent>
+                  <div className="flex items-center space-x-3">
+                    <ArticleIcon size={40} className="text-[#b21ad8]" />
+                    <Typography variant="h6" className="font-semibold truncate" style={{ maxWidth: '100%' }}>
+                      {file.name || 'Untitled File'}
                     </Typography>
-                    <Typography variant="body2" color="textSecondary">
+                  </div>
+                  <Typography variant="body2" color="textSecondary">
+                    {(file.size / 1e6).toFixed(2)} MB
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    {new Date(file.updatedAt).toLocaleTimeString()},
+                    {new Date(file.updatedAt).toLocaleDateString()}
+                  </Typography>
+                </CardContent>
+                <div className="absolute top-2 right-2">
+                  <DropdownMenu options={dropdownOptions(file)} />
+                </div>
+              </Card>
+            </Grid>
+          ))}
+        </div>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>Type</TableCell>
+                <TableCell>Size</TableCell>
+                <TableCell>Last Modified</TableCell>
+                <TableCell>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {/* Subfolders */}
+              {folder?.children?.map((subfolder) => (
+                <TableRow key={subfolder.id}>
+                  <TableCell>{subfolder.name || 'New Folder'}</TableCell>
+                  <TableCell>Folder</TableCell>
+                  <TableCell>{subfolder.children?.length || 0}</TableCell>
+                  <TableCell>{new Date(subfolder.updatedAt).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      onClick={() => openFolder(subfolder.id)}
+                    >
+                      Open
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+
+              {/* Files */}
+              {filteredFiles?.length > 0 &&
+                folder.files.map((file) => (
+                  <TableRow key={file.id}>
+                    <TableCell>{file.name || 'Untitled File'}</TableCell>
+                    <TableCell>File</TableCell>
+                    <TableCell>{(file.size / 1e6).toFixed(2)} MB</TableCell>
+                    <TableCell>
                       {new Date(file.updatedAt).toLocaleTimeString()},
                       {new Date(file.updatedAt).toLocaleDateString()}
-                    </Typography>
-                  </CardContent>
-                  <div className="absolute top-2 right-2">
-                    <DropdownMenu options={dropdownOptions(file)} />
-                  </div>
-                </Card>
-              </Grid>
-            ))}
-        </div>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu options={dropdownOptions(file)} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
         <FolderDialog
           open={openDialog}

@@ -171,7 +171,7 @@ const Trash = () => {
               </InputAdornment>
             ),
           }}
-          sx={{ backgroundColor: "#f9f9f9", borderRadius: 1, boxShadow: 1 }}
+        //   sx={{ backgroundColor: "#f9f9f9", borderRadius: 1, boxShadow: 1 }}
         />
       </Paper>
 
