@@ -29,6 +29,7 @@ const Folders = React.lazy(() => import("./pages/Folders/Folders.jsx"));
 const SingleFolder = React.lazy(() => import("./pages/SingleFolder/SingleFolder.jsx"));
 const Terms = React.lazy(() => import("./pages/Terms/Terms.jsx"));
 const Privacy = React.lazy(() => import("./pages/Privacy/Privacy.jsx"));
+const Trash = React.lazy(() => import("./pages/Trash/Trash.jsx"))
 import CookieConsent from "./components/CookieConsent/CookieConsent.jsx";
 
 
@@ -76,6 +77,7 @@ const App = () => {
               <Route path="/admin/users" element={<AllUsers />} />
               <Route path="/admin/files" element={<UserFiles />} />
               <Route path="/admin/user/:userId" element={<UserProfile />} />
+              <Route path="/admin/trash" element={<Trash />} />
             </Route>
           </Route>
         </Route>

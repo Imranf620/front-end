@@ -25,21 +25,20 @@ import { fetchMyProfile, logout } from "../../features/userSlice";
 import { uploadFile } from "../../features/filesSlice";
 import { reFetchContext } from "../../context/ReFetchContext";
 
-import axios from "axios"; // Ensure axios is imported
+import axios from "axios";
 
 const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   const { loading, user } = useSelector((state) => state.auth);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadProgress, setUploadProgress] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const dispatch = useDispatch();
   const location = useLocation();
   const { handleRefetch } = useContext(reFetchContext);
   const navigate = useNavigate();
   const baseApi = import.meta.env.VITE_API_URL;
- 
   const [isUploading, setIsUploading] = useState(false);
 
   const handleMenuClick = useCallback((event) => {
@@ -50,7 +49,6 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   const handleMenuClose = () => {
     setMenuOpen(false);
   };
-  
 
   const handleLogout = async () => {
     setMenuOpen(false);
@@ -66,74 +64,81 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
   };
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    setSelectedFile(file);
+    const files = event.target.files;
+    setSelectedFiles([...files]);
     setOpenDialog(true);
   };
 
   const handleConfirmUpload = async () => {
-    if (!selectedFile) {
-      toast.error("No file selected!");
+    if (selectedFiles.length === 0) {
+      toast.error("No files selected!");
       return;
     }
 
-
-    setUploadProgress(0);
+    setUploadProgress(Array(selectedFiles.length).fill(0));
     setIsUploading(true);
+    
     try {
-      // Step 1: Get presigned URL from backend
-      const response = await axios.post(
-        `${baseApi}/pre-ass-url`,
-        {
-          fileName: selectedFile.name,
-          fileType: selectedFile.type,
-        },
-        { withCredentials: true }
-      );
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        // Step 1: Get presigned URL from backend
+        const response = await axios.post(
+          `${baseApi}/pre-ass-url`,
+          {
+            fileName: file.name,
+            fileType: file.type,
+          },
+          { withCredentials: true }
+        );
 
-      const { url, downloadUrl, publicUrl} = response.data;
-     
-      const uploadResponse = await axios.put(url, selectedFile, {
-        headers: {
-          "Content-Type": selectedFile.type,
-        },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percent); 
-        },
-      });
+        const { url, downloadUrl, publicUrl } = response.data;
 
-      // Step 4: Upload file info to backend
-      const result = await dispatch(
-        uploadFile({
-          name: selectedFile.name,
-          size: selectedFile.size,
-          type: selectedFile.type,
-          path: publicUrl,
-          
-        })
-      );
+        // Step 2: Upload file
+        const uploadResponse = await axios.put(url, file, {
+          headers: {
+            "Content-Type": file.type,
+          },
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress((prevProgress) => {
+              const newProgress = [...prevProgress];
+              newProgress[i] = percent;
+              return newProgress;
+            });
+          },
+        });
 
-      if (result.payload?.success) {
-        toast.success(result.payload.message);
-        handleRefetch();
-        dispatch(fetchMyProfile());
-      } else {
-        toast.error(result.payload.message);
+        // Step 3: Upload file info to backend
+        const result = await dispatch(
+          uploadFile({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            path: publicUrl,
+          })
+        );
+
+        if (result.payload?.success) {
+          toast.success(result.payload.message);
+          handleRefetch();
+          dispatch(fetchMyProfile());
+        } else {
+          toast.error(result.payload.message);
+        }
       }
     } catch (error) {
-      toast.error("Error uploading file: " + error.message);
+      toast.error("Error uploading file(s): " + error.message);
     } finally {
-      setUploadProgress(0);
+      setUploadProgress([]);
       setIsUploading(false);
       setOpenDialog(false);
     }
   };
 
   const handleCancelUpload = () => {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setOpenDialog(false);
   };
 
@@ -141,14 +146,13 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
     setMenuOpen(false);
   }, [location]);
 
-
-  const handleProfileClick= ()=>{
+  const handleProfileClick = () => {
     navigate(`/profile`);
-  }
+  };
 
-  const handlePackageClick =()=>{
+  const handlePackageClick = () => {
     navigate(`/packages`);
-  }
+  };
 
   return (
     <AppBar position="sticky" color="secondary">
@@ -156,28 +160,30 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
         <Typography variant="h6">Gofilez</Typography>
 
         <div className="flex items-center gap-1 md:gap-4">
-          {!isUploading &&  user?.user?.role==="USER" && <Tooltip title="Upload File">
-            <Button
-              variant="contained"
-              color="secondary"
-              startIcon={<CloudUpload />}
-              component="label"
-            >
-              Upload
-              <input type="file" hidden onChange={handleFileChange} />
-            </Button>
-          </Tooltip>}
-
-          {/* Loader/Progress Bar */}
+          {!isUploading && user?.user?.role === "USER" && (
+            <Tooltip title="Upload Files">
+              <Button
+                variant="contained"
+                color="secondary"
+                startIcon={<CloudUpload />}
+                component="label"
+              >
+                Upload
+                <input
+                  type="file"
+                  hidden
+                  onChange={handleFileChange}
+                  multiple
+                />
+              </Button>
+            </Tooltip>
+          )}
 
           {isUploading && (
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <CircularProgress size={20} color="primary" />
-              <Typography
-                variant="subtitle1"
-                style={{  color: "#fff" }}
-              >
-                Uploading... {uploadProgress}%
+              <Typography variant="subtitle1" style={{ color: "#fff" }}>
+                Uploading... {Math.max(...uploadProgress)}%
               </Typography>
             </div>
           )}
@@ -199,33 +205,35 @@ const Navbar = ({ toggleDarkMode, isDarkMode, handleToggle }) => {
               },
             }}
           >
-              <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
-              <MenuItem onClick={handlePackageClick}>Subscriptions</MenuItem>
+            <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
+            <MenuItem onClick={handlePackageClick}>Subscriptions</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
           </Menu>
 
           <Tooltip title={isDarkMode ? "Light Mode" : "Dark Mode"}>
             <>
-            <IconButton onClick={toggleDarkMode} color="inherit">
-              {isDarkMode ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
-            <div className="lg:hidden">
-              <MenuIcon onClick={handleToggle} />
-            </div>
-          </>
+              <IconButton onClick={toggleDarkMode} color="inherit">
+                {isDarkMode ? <Brightness7 /> : <Brightness4 />}
+              </IconButton>
+              <div className="lg:hidden">
+                <MenuIcon onClick={handleToggle} />
+              </div>
+            </>
           </Tooltip>
-
         </div>
       </Toolbar>
 
-      {/* Confirmation Dialog */}
       <Dialog open={openDialog && !isUploading} onClose={handleCancelUpload}>
         <DialogTitle>Confirm File Upload</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to upload the file{" "}
-            <strong>{selectedFile?.name}</strong>?
+            Are you sure you want to upload the selected files?
           </Typography>
+          <ul>
+            {selectedFiles.map((file, index) => (
+              <li key={index}>{file.name}</li>
+            ))}
+          </ul>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancelUpload} color="primary">

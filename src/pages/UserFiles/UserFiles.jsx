@@ -17,7 +17,14 @@ import {
   DialogTitle,
   TextField,
   Button,
+  TableRow,
+  TableBody,
+  TableContainer,
+  TableCell,
+  Table,
+  TableHead,
   FormControlLabel,
+  IconButton,
   Checkbox,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
@@ -34,6 +41,9 @@ import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
 import { adminFileDelete, getUserFiles } from "../../features/adminSlice";
+import GridViewIcon from "@mui/icons-material/GridView";
+import TableRowsIcon from "@mui/icons-material/TableRows";
+
 
 const UserFiles = () => {
   const { userId } = useParams();
@@ -53,6 +63,9 @@ const UserFiles = () => {
   const [newName, setNewName] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectFile, setSelectFile] = useState(false);
+  const [viewMode, setViewMode] = useState(
+    () => localStorage.getItem("viewMode") || "grid"
+  );
 
   const { refetch, handleRefetch } = useContext(reFetchContext);
 
@@ -75,6 +88,13 @@ const UserFiles = () => {
     };
     fetchData();
   }, [sortBy, orderDirection, dispatch, refetch]);
+
+
+  const handleToggleView = () => {
+    const newMode = viewMode === "grid" ? "table" : "grid";
+    setViewMode(newMode);
+    localStorage.setItem("viewMode", newMode);
+  };
 
   const dropdownOptions = (file) => [
     { label: "View", onClick: () => handleView(file) },
@@ -300,16 +320,25 @@ const UserFiles = () => {
         >
           {selectFile ? "Deselect" : "Select"}
         </Button>
-       { selectFile &&  <Button
-          variant="contained"
-          color="error"
-          sx={{ marginBottom: 2, marginLeft: "10px" }}
-          disabled={selectedFiles.length === 0}
-          onClick={() => setDeleteModalOpen(true)}
-        >
-          Delete Selected
-        </Button>}
+        {selectFile && (
+          <Button
+            variant="contained"
+            color="error"
+            sx={{ marginBottom: 2, marginLeft: "10px" }}
+            disabled={selectedFiles.length === 0}
+            onClick={() => setDeleteModalOpen(true)}
+          >
+            Delete Selected
+          </Button>
+        )}
       </div>
+
+      <Box display="flex" justifyContent="flex-end" mb={2}>
+          <IconButton onClick={() => handleToggleView()}>
+            {viewMode === "grid" ? <TableRowsIcon /> : <GridViewIcon />}
+          </IconButton>
+        </Box>
+
 
       {loading ? (
         <Box
@@ -323,102 +352,133 @@ const UserFiles = () => {
           <CircularProgress />
         </Box>
       ) : filteredFiles.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ">
-          {paginatedFiles.map((file) => (
-            <Paper
-              sx={{
-                padding: 3,
-                marginBottom: 2,
-                boxShadow: 2,
-                borderRadius: 2,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                transition: "0.3s ease",
-                position: "relative",
-                "&:hover": {
-                  boxShadow: 6,
-                },
-              }}
-              key={file.id}
-            >
-              {selectFile && (
-                <FormControlLabel
-                  sx={{
-                    position: "absolute",
-                    bottom: "10px",
-                    right: "10px",
-                    cursor: "pointer",
-                    zIndex: "100",
-                  }}
-                  control={
-                    <Checkbox
-                      checked={selectedFiles.includes(file.id)}
-                      onChange={() => handleFileSelect(file.id)}
-                      sx={{
-                        color: "primary.main",
-
-                        "&.Mui-checked": {
-                          color: "primary.main",
-                        },
-                      }}
-                    />
-                  }
-                  label=""
-                />
-              )}
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <div
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      borderRadius: "50%",
-                      backgroundColor: "#ff2424",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+        viewMode === "grid" ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {paginatedFiles.map((file) => (
+              <Paper
+                sx={{
+                  padding: 3,
+                  marginBottom: 2,
+                  boxShadow: 2,
+                  borderRadius: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  transition: "0.3s ease",
+                  position: "relative",
+                  "&:hover": { boxShadow: 6 },
+                }}
+                key={file.id}
+              >
+                {selectFile && (
+                  <FormControlLabel
+                    sx={{
+                      position: "absolute",
+                      bottom: "10px",
+                      right: "10px",
+                      cursor: "pointer",
+                      zIndex: "100",
                     }}
-                  >
-                    <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
-                  </div>
-                  <Box>
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        fontWeight: "bold",
-                        width: "144px",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "wrap",
-                        overflow: "hidden",
+                    control={
+                      <Checkbox
+                        checked={selectedFiles.includes(file.id)}
+                        onChange={() => handleFileSelect(file.id)}
+                        sx={{
+                          color: "primary.main",
+                          "&.Mui-checked": { color: "primary.main" },
+                        }}
+                      />
+                    }
+                    label=""
+                  />
+                )}
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Box sx={{ display: "flex", gap: 2 }}>
+                    <div
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        borderRadius: "50%",
+                        backgroundColor: "#ff2424",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                       }}
                     >
-                      {file.name}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {(file.size / 1e6).toFixed(2)} MB
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
+                      <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
+                    </div>
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: "bold",
+                          width: "144px",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "wrap",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {file.name}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {(file.size / 1e6).toFixed(2)} MB
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {new Date(file.updatedAt).toLocaleTimeString()},{" "}
+                        {new Date(file.updatedAt).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Total Downloads: {file.totalDownloads}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        Total Views: {file.totalViews}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        User: {file?.user?.email}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <DropdownMenu options={dropdownOptions(file)} />
+                </Box>
+              </Paper>
+            ))}
+          </div>
+        ) : (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Size</TableCell>
+                  <TableCell>Last Updated</TableCell>
+                  <TableCell>Total Downloads</TableCell>
+                  <TableCell>Total Views</TableCell>
+                  <TableCell>User</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedFiles.map((file) => (
+                  <TableRow key={file.id}>
+                    <TableCell>{file.name}</TableCell>
+                    <TableCell>{(file.size / 1e6).toFixed(2)} MB</TableCell>
+                    <TableCell>
                       {new Date(file.updatedAt).toLocaleTimeString()},{" "}
                       {new Date(file.updatedAt).toLocaleDateString()}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Total Downloads: {file.totalDownloads}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      Total Views: {file.totalViews}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      user: {file?.user?.email}
-                    </Typography>
-                  </Box>
-                </Box>
-                <DropdownMenu options={dropdownOptions(file)} />
-              </Box>
-            </Paper>
-          ))}
-        </div>
+                    </TableCell>
+                    <TableCell>{file.totalDownloads}</TableCell>
+                    <TableCell>{file.totalViews}</TableCell>
+                    <TableCell>{file?.user?.email}</TableCell>
+                    <TableCell>
+                      <DropdownMenu options={dropdownOptions(file)} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )
       ) : (
         <Typography variant="body1" color="textSecondary">
           No files available.

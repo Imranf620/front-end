@@ -44,6 +44,21 @@ export const fetchTrash = createAsyncThunk(
       return rejectWithValue(error.response.data);
     }
   })
+  export const getAllTrash = createAsyncThunk("/trash/getAll", async({search, orderBy, orderDirection},{rejectWithValue})=>{
+    try {
+        const res = await axios.get(`${baseApi}/admin/files/trash`, {
+          params: {
+            search,
+            orderBy,
+            orderDirection,
+          },
+          withCredentials: true,
+        });
+        return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  })
 
 
 

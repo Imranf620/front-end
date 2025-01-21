@@ -16,6 +16,13 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
 } from "@mui/material";
 import ArticleIcon from "@mui/icons-material/Article";
 import DropdownMenu from "../../components/dropdownMenu/DropdownMenu";
@@ -29,6 +36,8 @@ import { toast } from "react-toastify";
 import { reFetchContext } from "../../context/ReFetchContext";
 import { useTheme } from "../../context/ThemeContext";
 import SEO from "../../components/SEO/SEO";
+import GridViewIcon from "@mui/icons-material/GridView";
+import TableRowsIcon from "@mui/icons-material/TableRows";
 
 const Shared = () => {
   const { type } = useParams();
@@ -42,6 +51,7 @@ const Shared = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [dataLoading, setDataLoading] = useState(false);
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem("viewMode") || "grid");
 
   const { refetch } = useContext(reFetchContext);
 
@@ -60,7 +70,7 @@ const Shared = () => {
         setFilteredFiles(response?.payload?.data || []);
       } catch (error) {
         toast.error(error.message || "Failed to fetch files");
-      }finally{
+      } finally {
         setDataLoading(false);
       }
     };
@@ -71,6 +81,13 @@ const Shared = () => {
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
   };
+
+  const handleToggleView = () => {
+    const newMode = viewMode === "grid" ? "table" : "grid";
+    setViewMode(newMode);
+    localStorage.setItem("viewMode", newMode);
+  };
+
 
   const handleOrderDirectionChange = (event) => {
     setOrderDirection(event.target.value);
@@ -120,7 +137,6 @@ const Shared = () => {
 
   const handleDownload = async (file) => {
     try {
-
       const response = await fetch(file?.path);
       const blob = await response.blob();
 
@@ -211,7 +227,18 @@ const Shared = () => {
         <Typography variant="h6" sx={{ marginBottom: 2 }}>
           Files:
         </Typography>
-        {loading  || dataLoading ? (
+
+        <Box
+          sx={{ display: "flex", justifyContent: "flex-end", marginBottom: 2 }}
+        >
+          <IconButton
+              onClick={() => handleToggleView()}
+          >
+            {viewMode === "grid" ? <TableRowsIcon /> : <GridViewIcon />}
+          </IconButton>
+        </Box>
+
+        {loading || dataLoading ? (
           <Box
             sx={{
               display: "flex",
@@ -223,73 +250,106 @@ const Shared = () => {
             <CircularProgress />
           </Box>
         ) : filteredFiles.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {paginatedFiles.map((file) => (
-              <Paper
-                sx={{
-                  padding: 3,
-                  marginBottom: 2,
-                  boxShadow: 2,
-                  borderRadius: 2,
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "space-between",
-                  transition: "0.3s ease",
-                  "&:hover": { boxShadow: 6 },
-                }}
-                key={file.id}
-              >
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Box sx={{ display: "flex", gap: 2 }}>
-                    <div
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        borderRadius: "50%",
-                        backgroundColor: "#ff2424",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                      }}
-                    >
-                      <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
-                    </div>
-                    <Box>
-                       <Typography
-                                           variant="h6"
-                                           sx={{
-                                             fontWeight: "bold",
-                                             width: {
-                                               xs: "144px",
-                                               sm: "144px", 
-                                             },
-                                             textOverflow: "ellipsis",
-                                             whiteSpace: "nowrap", 
-                                             overflow: "hidden",
-                                           }}
-                                         >
-                                           {file.name}
-                                         </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {(file.size / 1e6).toFixed(2)} MB
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
+          viewMode === "grid" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginatedFiles.map((file) => (
+                <Paper
+                  sx={{
+                    padding: 3,
+                    marginBottom: 2,
+                    boxShadow: 2,
+                    borderRadius: 2,
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    transition: "0.3s ease",
+                    "&:hover": { boxShadow: 6 },
+                  }}
+                  key={file.id}
+                >
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Box sx={{ display: "flex", gap: 2 }}>
+                      <div
+                        style={{
+                          width: "50px",
+                          height: "50px",
+                          borderRadius: "50%",
+                          backgroundColor: "#ff2424",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
+                        }}
+                      >
+                        <ArticleIcon sx={{ color: "white", fontSize: 30 }} />
+                      </div>
+                      <Box>
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: "bold",
+                            width: { xs: "144px", sm: "144px" },
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {file.name}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {(file.size / 1e6).toFixed(2)} MB
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {new Date(
+                            file.fileShares[0].sharedAt
+                          ).toLocaleTimeString()}
+                          , {new Date(file.updatedAt).toLocaleDateString()}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Shared by: {file.user.name}
+                        </Typography>
+                      </Box>
+                    </Box>
+                    <DropdownMenu options={dropdownOptions(file)} />
+                  </Box>
+                </Paper>
+              ))}
+            </div>
+          ) : (
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Size</TableCell>
+                    <TableCell>Last Updated</TableCell>
+                    <TableCell>Shared By</TableCell>
+                    <TableCell>Actions</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {paginatedFiles.map((file) => (
+                    <TableRow key={file.id}>
+                      <TableCell>{file.name}</TableCell>
+                      <TableCell>{(file.size / 1e6).toFixed(2)} MB</TableCell>
+                      <TableCell>
                         {new Date(
                           file.fileShares[0].sharedAt
                         ).toLocaleTimeString()}
                         , {new Date(file.updatedAt).toLocaleDateString()}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        Shared by: {file.user.name}
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <DropdownMenu options={dropdownOptions(file)} />
-                </Box>
-              </Paper>
-            ))}
-          </div>
+                      </TableCell>
+                      <TableCell>{file.user.name}</TableCell>
+                      <TableCell>
+                        <DropdownMenu options={dropdownOptions(file)} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )
         ) : (
           <Typography variant="body1" color="textSecondary">
             No files available.

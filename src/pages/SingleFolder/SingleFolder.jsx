@@ -148,12 +148,13 @@ const SingleFolder = () => {
   };
 
   const handleFileSelection = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      setConfirmUploadOpen(true);
+    const files = e.target.files;
+    if (files.length > 0) {
+      setSelectedFiles(files); 
+      setConfirmUploadOpen(true); 
     }
   };
+  
   const handleFileSelect = (fileId) => {
     setSelectedFiles((prevSelectedFiles) => {
       if (prevSelectedFiles.includes(fileId)) {
@@ -165,63 +166,63 @@ const SingleFolder = () => {
   };
 
   const handleUploadConfirm = async () => {
-    if (!selectedFile) {
-      toast.error("No file selected!");
+    if (selectedFiles.length === 0) {
+      toast.error("No files selected!");
       return;
     }
-
+  
     setConfirmUploadOpen(false);
     setUploadProgress(0);
     setIsUploading(true);
-
+  
     try {
-      const response = await axios.post(
-        `${baseApi}/pre-ass-url`,
-        {
-          fileName: selectedFile.name,
-          fileType: selectedFile.type,
-        },
-        { withCredentials: true }
-      );
-
-      const { url, publicUrl } = response.data;
-
-      const uploadResponse = await axios.put(url, selectedFile, {
-        headers: {
-          "Content-Type": selectedFile.type,
-        },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percent);
-        },
-      });
-
-      const result = await dispatch(
-        uploadFile({
-          name: selectedFile.name,
-          size: selectedFile.size,
-          type: selectedFile.type,
-          path: publicUrl,
-          folderId: id,
-        })
-      );
-
-      if (result.payload?.success) {
-        toast.success(result.payload.message);
-        setRefetch(!refetch);
-      } else {
-        toast.error(result.payload.message);
+      // Loop through each selected file and upload
+      for (const file of selectedFiles) {
+        const response = await axios.post(
+          `${baseApi}/pre-ass-url`,
+          { fileName: file.name, fileType: file.type },
+          { withCredentials: true }
+        );
+  
+        const { url, publicUrl } = response.data;
+  
+        await axios.put(url, file, {
+          headers: { "Content-Type": file.type },
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percent);
+          },
+        });
+  
+        // Dispatch the file data for storing in the backend
+        const result = await dispatch(
+          uploadFile({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            path: publicUrl,
+            folderId: id,
+          })
+        );
+  
+        if (result.payload?.success) {
+          toast.success(result.payload.message);
+        } else {
+          toast.error(result.payload.message);
+        }
       }
+  
+      setRefetch(!refetch); // Trigger refetch to update file list
     } catch (error) {
-      toast.error("Error uploading file: " + error.message);
+      toast.error("Error uploading files: " + error.message);
     } finally {
       setUploadProgress(0);
       setIsUploading(false);
     }
   };
-
+  
   const handleUploadCancel = () => {
     setConfirmUploadOpen(false);
     setSelectedFile(null);
@@ -381,6 +382,11 @@ const SingleFolder = () => {
     }
   };
 
+  const handleCancelUpload = () => {
+    setSelectedFiles([]);
+    setConfirmUploadOpen(false);
+  };
+
   const handleDownload = async (file) => {
     try {
       const response = await fetch(file.path);
@@ -449,7 +455,7 @@ const SingleFolder = () => {
         </div>
 
         <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
-          <div className="flex items-center space-x-2">
+          {/* <div className="flex items-center space-x-2">
             <Button
               variant="outlined"
               onClick={() => {
@@ -467,7 +473,7 @@ const SingleFolder = () => {
                   : "Select All"}
               </Button>
             )}
-          </div>
+          </div> */}
 
           <Box className="flex flex-wrap items-center gap-2">
             {(selectedSubfolders.length > 0 || selectedFiles.length > 0) &&
@@ -500,7 +506,6 @@ const SingleFolder = () => {
               Create Folder
             </Button>
 
-            {/* Upload Button */}
             <Button
               variant="contained"
               color="primary"
@@ -513,8 +518,10 @@ const SingleFolder = () => {
                 hidden
                 onChange={handleFileSelection}
                 accept="*/*"
+                multiple
               />
             </Button>
+
           </Box>
         </div>
 
@@ -527,23 +534,27 @@ const SingleFolder = () => {
         )}
 
         {/* Confirm Upload Dialog */}
-        <Dialog open={confirmUploadOpen} onClose={handleUploadCancel}>
-          <DialogTitle>Confirm Upload</DialogTitle>
-          <DialogContent>
-            <Typography>
-              Are you sure you want to upload the file:{" "}
-              <strong>{selectedFile?.name}</strong>?
-            </Typography>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleUploadCancel} color="secondary">
-              Cancel
-            </Button>
-            <Button onClick={handleUploadConfirm} color="primary">
-              Confirm
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <Dialog open={confirmUploadOpen && !isUploading} onClose={handleCancelUpload}>
+        <DialogTitle>Confirm File Upload</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to upload the following files?
+          </Typography>
+          <ul>
+            {Array.from(selectedFiles).map((file, index) => (
+              <li key={index}>{file.name}</li>
+            ))}
+          </ul>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancelUpload} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleUploadConfirm} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
 
         {/* Subfolder display */}
         <div className="flex flex-wrap  items-center gap-4">

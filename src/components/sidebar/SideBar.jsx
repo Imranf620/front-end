@@ -30,6 +30,8 @@ const SideBar = ({handleToggle}) => {
   ]:[
     { path: '/admin/users', label: 'Users', icon: <GroupIcon style={{ color: 'white' }} /> },
     { path: '/admin/files', label: ' Files', icon: <Folder style={{ color: 'white' }} /> },
+    { path: '/admin/trash', label: ' Trash', icon: <DeleteIcon style={{ color: 'white' }} /> },
+
   
   ]
 
