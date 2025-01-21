@@ -54,7 +54,7 @@ const Folders = () => {
         setLoading(false);
       });
   }, [baseApi, refetch]);
-  
+
   const handleToggleView = () => {
     const newMode = viewMode === "grid" ? "table" : "grid";
     setViewMode(newMode);
@@ -228,7 +228,7 @@ const Folders = () => {
               </TableHead>
               <TableBody>
                 {allFolders?.map((folder) => (
-                  <TableRow key={folder.id}>
+                  <TableRow className="cursor-pointer" key={folder.id}>
                     {isSelecting && (
                       <TableCell>
                         <Checkbox
