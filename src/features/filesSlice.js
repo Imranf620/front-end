@@ -227,6 +227,32 @@ export const getGuestFile = createAsyncThunk(
   }
 );
 
+export const uploadSocialVideo = createAsyncThunk('/upload-social-video', async(data,{rejectWithValue})=>{
+  try {
+    const res = await axios.post(`${baseApi}/social/upload`, data, {
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
+})
+export const getAllSocialVideos = createAsyncThunk(
+  "/social/videos/getAllSocialVideos",
+  async ({ search, category, page, limit }, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(`${baseApi}/social/all`, {
+        params: { search, category, page, limit },
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+
 const initialState = {
   loading: false,
   data: [],
