@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 
-const socket = io("http://localhost:4000");
+const socket = import.meta.env.VITE_FRONTEND_API_URL == "http://localhost:3000"
+  ? io("http://localhost:4000")
+  : io("https://gofilez.com", { path: "/api/socket.io/" });
+
 
 const VoiceChat = () => {
   const [stream, setStream] = useState(null);
