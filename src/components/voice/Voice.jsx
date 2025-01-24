@@ -5,18 +5,30 @@ const socket = import.meta.env.VITE_FRONTEND_API_URL == "http://localhost:3000"
   ? io("http://localhost:4000")
   : io("https://gofilez.com", { path: "/api/socket.io/" });
 
-
 const VoiceChat = () => {
   const [stream, setStream] = useState(null);
   const audioContextRef = useRef(new AudioContext());
   const remoteAudioRef = useRef();
 
-  useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
-      setStream(stream);
-      setupAudioProcessing(stream);
-    });
+  // Function to handle starting the audio context after user gesture
+  const handleStart = async () => {
+    const audioContext = audioContextRef.current;
+    try {
+      // Resuming AudioContext after user gesture
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      
+      // Request microphone access
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setStream(mediaStream);
+      setupAudioProcessing(mediaStream);
+    } catch (error) {
+      console.error("Error accessing audio:", error);
+    }
+  };
 
+  useEffect(() => {
     socket.on("receiveVoice", (data) => {
       playAudio(data);
     });
@@ -77,7 +89,7 @@ const VoiceChat = () => {
   return (
     <div>
       <h2>🎤 Real-Time Voice Chat</h2>
-      <button onClick={() => navigator.mediaDevices.getUserMedia({ audio: true })}>
+      <button onClick={handleStart}>
         Start Voice Chat
       </button>
       <audio ref={remoteAudioRef} autoPlay />
