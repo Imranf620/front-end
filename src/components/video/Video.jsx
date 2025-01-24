@@ -1,28 +1,85 @@
-import React from 'react';
-import { Box, Card, CardContent, Typography } from '@mui/material';
+import React, { useState } from "react";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Menu,
+  MenuItem,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import { toast } from "react-toastify";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteMyVideo } from "../../features/filesSlice";
 
 const Video = ({ video }) => {
+  const [menuAnchor, setMenuAnchor] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
+
+  const handleMenuOpen = (event) => {
+    setMenuAnchor(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const share = () => {
+    try {
+      const videoLink = `${window.location.origin}${window.location.pathname}/${video.random}`;
+      navigator.clipboard.writeText(videoLink);
+      toast.success("Video link copied successfully");
+      handleMenuClose();
+    } catch (error) {
+      toast.error("Error sharing video");
+    }
+  };
+
+  const deleteVideo = async () => {
+    setDeleting(true);
+    const res = await dispatch(deleteMyVideo(video.id));
+    if (res.payload.success) {
+      toast.success("Video deleted successfully");
+    } else {
+      toast.error(res.payload.message);
+    }
+    setDeleting(false);
+    handleMenuClose();
+  };
+
   return (
-    <Box sx={{ display: "flex", justifyContent: "center", marginBottom: 3 }}>
+    <Box sx={{ display: "flex", justifyContent: "center", mt: 3, width: "100%" }}>
       <Card
         sx={{
-          width: "100%", // Make video cover the full width
-          boxShadow: 3,
-          borderRadius: 2,
+          width: "90%",
+          maxWidth: "900px",
+          boxShadow: 4,
+          borderRadius: 3,
           overflow: "hidden",
           textAlign: "left",
-          display: "flex",
-          flexDirection: "column",
+          bgcolor: "white",
+          padding: 2,
         }}
       >
-        {/* Video Section */}
-        <Box>
+        <Box
+          sx={{
+            width: "100%",
+            height: "500px",
+            borderRadius: "10px",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
           <video
             style={{
               width: "100%",
-              height: "auto",
-              aspectRatio: "16/9", // Keeps the aspect ratio of the video
-              borderBottom: "1px solid #ccc", // Adds a separation line between the video and content
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "10px",
             }}
             controls
           >
@@ -31,12 +88,27 @@ const Video = ({ video }) => {
           </video>
         </Box>
 
-        {/* Title & Description Below Video */}
         <CardContent sx={{ padding: 2 }}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            {video.name}
-          </Typography>
-          <Typography variant="body2" color="textSecondary">
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Typography variant="h6" fontWeight="bold">
+              {video.name}
+            </Typography>
+
+            <IconButton onClick={handleMenuOpen}>
+              <MoreVertIcon />
+            </IconButton>
+
+            <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={handleMenuClose}>
+              <MenuItem onClick={share}>Share</MenuItem>
+              {user.user.id === video.uploadedBy && (
+                <MenuItem onClick={deleteVideo} sx={{ color: "red" }} disabled={deleting}>
+                  {deleting ? <CircularProgress size={20} /> : "Delete"}
+                </MenuItem>
+              )}
+            </Menu>
+          </Box>
+
+          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
             {video.description}
           </Typography>
         </CardContent>

@@ -13,6 +13,9 @@ import Video from "../../components/video/Video.jsx";
 import UploadModel from "../../components/uploadModel/UploadModel.jsx";
 import { useDispatch } from "react-redux";
 import { getAllSocialVideos } from "../../features/filesSlice.js";
+import { useParams } from "react-router-dom";
+import SingleVideo from "../SingleVideo/SingleVideo.jsx";
+
 
 const Social = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +41,7 @@ const Social = () => {
   const [totalVideos, setTotalVideos] = useState(0);
   const [videos, setVideos] = useState([]);
   const dispatch = useDispatch();
+  const {random} = useParams()
 
   useEffect(() => {
     const getAllVideos = async () => {
@@ -55,6 +59,11 @@ const Social = () => {
     getAllVideos();
   }, [page, limit, searchTerm, filter]);
 
+  const fetchAllRelaltedVideos = (category)=>{
+    setFilter(category)
+    setPage(1)
+  }
+
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -68,6 +77,7 @@ const Social = () => {
   };
 
   return (
+
     <Box sx={{ padding: 2 }}>
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Button
@@ -79,7 +89,7 @@ const Social = () => {
           Upload Video
         </Button>
 
-        <TextField
+      { !random &&  <TextField
           label="Search Videos"
           variant="outlined"
           value={searchTerm}
@@ -90,10 +100,10 @@ const Social = () => {
               <InputAdornment position="start">🔍</InputAdornment>
             ),
           }}
-        />
+        />}
       </Box>
 
-      <Box sx={{ marginTop: 2 }}>
+  {!random  &&   <Box sx={{ marginTop: 2 }}>
         {filterdata.map((keyword) => (
           <Button
             key={keyword}
@@ -112,8 +122,10 @@ const Social = () => {
             {keyword}
           </Button>
         ))}
-      </Box>
+      </Box>}
 
+    {random &&   <SingleVideo fetchAllRelaltedVideos={fetchAllRelaltedVideos} random={random}/>
+}
       <Box sx={{ marginTop: 3 }}>
         {videos.length > 0 ? (
           <Grid container spacing={3}>

@@ -1,0 +1,19 @@
+video::-webkit-media-controls-play-button {
+    display: none;
+  }
+  
+  video::-webkit-media-controls-start-playback-button {
+    display: none;
+  }
+  video::-webkit-media-controls-fullscreen-button {
+    display: none !important;
+  }
+.guest-video::-webkit-media-controls-seek-backward-button {
+    display: none !important;
+  }
+  .guest-video::-webkit-media-controls-timeline {
+    display: none !important;
+  }
+
+  
+  

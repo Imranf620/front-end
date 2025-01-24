@@ -253,6 +253,35 @@ export const getAllSocialVideos = createAsyncThunk(
 );
 
 
+
+export const deleteMyVideo = createAsyncThunk(
+  "/social/videos/getAllSocialVideos",
+  async (id , { rejectWithValue }) => {
+    try {
+      const res = await axios.delete(`${baseApi}/social`, {
+        params: { id },
+        withCredentials: true,
+      });
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
+export const getSingleVideo = createAsyncThunk('/video', async(random,{rejectWithValue})=>{
+  try {
+    const res = await axios.get(`${baseApi}/social`, {
+      params: { random },
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (error) {
+    return rejectWithValue(error.response.data);
+  }
+})
+
+
 const initialState = {
   loading: false,
   data: [],

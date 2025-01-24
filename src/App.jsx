@@ -31,7 +31,9 @@ const Terms = React.lazy(() => import("./pages/Terms/Terms.jsx"));
 const Privacy = React.lazy(() => import("./pages/Privacy/Privacy.jsx"));
 const Trash = React.lazy(() => import("./pages/Trash/Trash.jsx"))
 const Social = React.lazy(() => import("./pages/Social/Social.jsx"))
+const PrivateVideo = React.lazy(() => import("./pages/PrivateVideo/PrivateVideo.jsx"))
 import CookieConsent from "./components/CookieConsent/CookieConsent.jsx";
+import VoiceChat from "./components/voice/Voice.jsx";
 
 
 const App = () => {
@@ -46,6 +48,8 @@ const App = () => {
       <Routes>
         {/* Public Route */}
         <Route path="/login" element={<Login />} />
+        <Route path="/voice/chat" element={<VoiceChat />} />
+
         <Route path="/signup" element={<SignUp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/:fileId" element={<HomePage />} />
@@ -72,6 +76,9 @@ const App = () => {
             <Route path="dashboard/folders/all" element={<Folders />} />
             <Route path="dashboard/folders/single" element={<SingleFolder />} />
             <Route path="dashboard/social/media" element={<Social />} />
+            <Route path="dashboard/social/media/:random" element={<Social />} />
+            <Route path="dashboard/social/private/:random" element={<PrivateVideo />} />
+
 
 
 

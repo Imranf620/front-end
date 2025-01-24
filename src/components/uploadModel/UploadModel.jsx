@@ -11,6 +11,8 @@ import {
   IconButton,
   CircularProgress,
   Grid,
+  LinearProgress,
+  Typography,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -27,9 +29,9 @@ const UploadModel = ({ close, filterdata }) => {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [openCategory, setOpenCategory] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState(0); // Track progress as a number, not an array
   const baseApi = import.meta.env.VITE_API_URL;
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const handleFileChange = (e) => {
     const uploadedFile = e.target.files[0];
@@ -72,7 +74,7 @@ const UploadModel = ({ close, filterdata }) => {
     }
 
     setLoading(true);
-    
+
     try {
       const response = await axios.post(
         `${baseApi}/pre-ass-url`,
@@ -112,6 +114,17 @@ const UploadModel = ({ close, filterdata }) => {
 
       if (result.payload?.success) {
         toast.success(result.payload.message);
+        if (sharingOption === "SHARED") {
+          try {
+            const videoLink = `${
+              import.meta.env.VITE_FRONTEND_API_URL
+            }/dashboard/social/private/${result.payload.data.random}`;
+            navigator.clipboard.writeText(videoLink);
+            toast.success("File link copied to clipboard!");
+          } catch (error) {
+            toast.error(error);
+          }
+        }
         close();
       } else {
         toast.error(result.payload.message);
@@ -129,7 +142,9 @@ const UploadModel = ({ close, filterdata }) => {
   };
 
   return (
-    <Box sx={{ padding: 2, position: "relative", width: "100%", maxWidth: 600 }}>
+    <Box
+      sx={{ padding: 2, position: "relative", width: "100%", maxWidth: 600 }}
+    >
       <Button onClick={close} sx={{ position: "absolute", top: 10, right: 10 }}>
         <Close />
       </Button>
@@ -215,18 +230,6 @@ const UploadModel = ({ close, filterdata }) => {
                     user && !isValidEmail(user) ? "Invalid email format" : ""
                   }
                 />
-                {specificUsers[0].trim() === "" && (
-                  <Box
-                    sx={{
-                      marginLeft: 2,
-                      color: "brown",
-                      fontSize: "0.75rem",
-                      fontStyle: "italic",
-                    }}
-                  >
-                    Please enter an email
-                  </Box>
-                )}
               </Grid>
               <Grid
                 item
@@ -246,6 +249,23 @@ const UploadModel = ({ close, filterdata }) => {
             <AddIcon />
           </IconButton>
         </Box>
+      )}
+
+      {uploadProgress > 0 && uploadProgress < 100 && (
+        <>
+          <LinearProgress
+            variant="determinate"
+            value={uploadProgress}
+            sx={{ marginTop: 2 }}
+          />
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{ marginTop: 1 }}
+          >
+            {`Uploading: ${uploadProgress}%`}
+          </Typography>
+        </>
       )}
 
       <Button
