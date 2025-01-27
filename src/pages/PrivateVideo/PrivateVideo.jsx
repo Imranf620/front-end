@@ -7,6 +7,7 @@ import { io } from "socket.io-client";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseCircleOutlineIcon from "@mui/icons-material/PauseCircleOutline";
 import "./PrivateVideo.css";
+import VoiceChat from "../../components/voice/Voice";
 
 const socket = import.meta.env.VITE_FRONTEND_API_URL == "http://localhost:3000"
   ? io("http://localhost:4000")
@@ -41,10 +42,9 @@ const PrivateVideo = () => {
   }, [dispatch, random]);
 
   useEffect(() => {
-    const handleVideoStateChange = ({ isPlaying, currentTime }) => {
-      if (!videoRef.current) return;
+    const handleVideoStateChange = ({ isPlaying, currentTime , videoId}) => {
+      if (!videoRef.current || video.id!=videoId) return;
 
-      // Set current time only if the difference is significant (avoid small sync errors)
       if (Math.abs(videoRef.current.currentTime - currentTime) > 0.5) {
         videoRef.current.currentTime = currentTime;
       }
@@ -86,6 +86,7 @@ const PrivateVideo = () => {
 
   const togglePlay = () => {
     if (!videoRef.current) return;
+    console.log(video.id)
 
     if (videoRef.current.paused) {
       videoRef.current
@@ -96,6 +97,7 @@ const PrivateVideo = () => {
             socket.emit("togglePlay", {
               state: "play",
               currentTime: videoRef.current.currentTime,
+              videoId: video.id,
             });
           }
         })
@@ -107,6 +109,7 @@ const PrivateVideo = () => {
         socket.emit("togglePlay", {
           state: "pause",
           currentTime: videoRef.current.currentTime,
+          videoId: video.id,
         });
       }
     }
@@ -116,7 +119,7 @@ const PrivateVideo = () => {
     if (!videoRef.current) return;
     const currentTime = videoRef.current.currentTime;
     if (video.uploadedBy === user?.user?.id) {
-      socket.emit("seekVideo", currentTime);
+      socket.emit("seekVideo", currentTime, video.id);
     }
   };
 
@@ -147,10 +150,26 @@ const PrivateVideo = () => {
       </Box>
     );
   }
+  
 
   const isInviteValid = video?.invites?.some(
     (invite) => invite.inviteeId === user?.user.id
   );
+  const isVideoUploader = video.uploadedBy === user.user.id;
+  if(!isVideoUploader && !isInviteValid){
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <Typography variant="h6" color="error">
+          You are not authorized to view this video.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -186,7 +205,7 @@ const PrivateVideo = () => {
             </video>
           </Box>
         </>
-      ) : video.uploadedBy === user?.user?.id ? (
+      ) : (
         <div>
           <Typography variant="h4" color="primary">
             Welcome Host
@@ -226,11 +245,9 @@ const PrivateVideo = () => {
             </Box>
           </Box>
         </div>
-      ) : (
-        <Typography variant="h6" color="error">
-          You are not allowed to view this video.
-        </Typography>
-      )}
+      ) }
+
+      <VoiceChat video={video}/>
     </Box>
   );
 };

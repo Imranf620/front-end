@@ -42,7 +42,7 @@ const TermsAndConditions = () => {
             4. File Upload and Ownership
           </h2>
           <p>
-            You retain ownership of all files you upload to [Your Site Name]. By
+            You retain ownership of all files you upload to gofilez.com. By
             uploading content, you grant us a license to store, process, and
             transmit your content as necessary for the operation of the service.
           </p>
@@ -94,8 +94,7 @@ const TermsAndConditions = () => {
             10. Governing Law
           </h2>
           <p>
-            These Terms and Conditions are governed by the laws of [Your
-            Country/Region]. Any disputes arising from these terms will be
+            These Terms and Conditions are governed by the laws. Any disputes arising from these terms will be
             handled in accordance with applicable local laws.
           </p>
 
