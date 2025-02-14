@@ -131,8 +131,8 @@ const PrivacyPolicy = () => {
           <p>
             If you have any questions or concerns about our Privacy Policy,
             please contact us at{" "}
-            <a href="mailto:gofilez@gmail.com" className="text-blue-500">
-              gofilez@gmail.com
+            <a href="mailto:admin@gofilez.com" className="text-blue-500">
+            admin@gofilez.com
             </a>
             .
           </p>

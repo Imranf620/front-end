@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import { Button, Card, Typography, IconButton } from "@mui/material";
 import MicIcon from "@mui/icons-material/Mic";
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import MicOffIcon from "@mui/icons-material/MicOff";
 import { useSelector } from "react-redux";
 
@@ -12,14 +14,17 @@ const socket =
 
 const VoiceChat = ({ video }) => {
   const [isCallStarted, setIsCallStarted] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);  // Mute state for the mic
+  const [isMuted, setIsMuted] = useState(false);
+  const [isSpeakerOn, setIsSpeakerOn] = useState(true);
   const remoteAudio = useRef(null);
   const peerConnectionRef = useRef(null);
   const localStreamRef = useRef(null);
   const servers = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
   const { user } = useSelector((state) => state.auth);
 
-  const isInvitedUser = video.invites.some((invite) => invite.inviteeId === user.user.id);
+  const isInvitedUser = video.invites.some(
+    (invite) => invite.inviteeId === user.user.id
+  );
   const isVideoUploader = video.uploadedBy === user.user.id;
 
   const createPeerConnection = () => {
@@ -41,9 +46,9 @@ const VoiceChat = ({ video }) => {
     createPeerConnection();
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     localStreamRef.current = stream;
-    stream.getTracks().forEach((track) =>
-      peerConnectionRef.current.addTrack(track, stream)
-    );
+    stream
+      .getTracks()
+      .forEach((track) => peerConnectionRef.current.addTrack(track, stream));
 
     const offer = await peerConnectionRef.current.createOffer();
     await peerConnectionRef.current.setLocalDescription(offer);
@@ -53,45 +58,45 @@ const VoiceChat = ({ video }) => {
 
   const stopCall = () => {
     setIsCallStarted(false);
+  
+    // Stop the local audio stream
     if (localStreamRef.current) {
       localStreamRef.current.getTracks().forEach((track) => track.stop());
       localStreamRef.current = null;
     }
-
+  
     if (peerConnectionRef.current) {
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
-
+  
     if (remoteAudio.current) {
       remoteAudio.current.srcObject = null;
     }
-
+  
+    // Notify the server that the call has ended
     socket.emit("stopAudioCall");
   };
 
-  const toggleMute = () => {
-    if (localStreamRef.current) {
-      localStreamRef.current.getTracks().forEach((track) => {
-        if (track.kind === "audio") {
-          track.enabled = !track.enabled;
-        }
-      });
-    }
-    setIsMuted(!isMuted);
-    socket.emit("toggleMute");
+
+
+  const toggleSpeaker = () => {
+    setIsSpeakerOn(!isSpeakerOn);
+    socket.emit("toggleSpeaker", !isSpeakerOn);
   };
 
   useEffect(() => {
     socket.on("offer", async (offer) => {
       createPeerConnection();
-      await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(offer));
+      await peerConnectionRef.current.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      );
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       localStreamRef.current = stream;
-      stream.getTracks().forEach((track) =>
-        peerConnectionRef.current.addTrack(track, stream)
-      );
+      stream
+        .getTracks()
+        .forEach((track) => peerConnectionRef.current.addTrack(track, stream));
 
       const answer = await peerConnectionRef.current.createAnswer();
       await peerConnectionRef.current.setLocalDescription(answer);
@@ -99,14 +104,21 @@ const VoiceChat = ({ video }) => {
     });
 
     socket.on("answer", async (answer) => {
-      if (peerConnectionRef.current && peerConnectionRef.current.signalingState !== "stable") {
-        await peerConnectionRef.current.setRemoteDescription(new RTCSessionDescription(answer));
+      if (
+        peerConnectionRef.current &&
+        peerConnectionRef.current.signalingState !== "stable"
+      ) {
+        await peerConnectionRef.current.setRemoteDescription(
+          new RTCSessionDescription(answer)
+        );
       }
     });
 
     socket.on("ice-candidate", async (candidate) => {
       if (peerConnectionRef.current) {
-        await peerConnectionRef.current.addIceCandidate(new RTCIceCandidate(candidate));
+        await peerConnectionRef.current.addIceCandidate(
+          new RTCIceCandidate(candidate)
+        );
       }
     });
 
@@ -125,6 +137,37 @@ const VoiceChat = ({ video }) => {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
       }
+    };
+  }, [isMuted]);
+
+  useEffect(() => {
+    socket.on("stopVoiceStream", ({ userId }) => {
+      if (userId === user.user.id && peerConnectionRef.current) {
+        const tracks = localStreamRef.current.getTracks();
+        tracks.forEach((track) => track.stop()); // Stops the local audio tracks
+        localStreamRef.current = null;
+      }
+    });
+  
+    return () => {
+      socket.off("stopVoiceStream");
+    };
+  }, [user.user.id]);
+
+  useEffect(() => {
+    socket.on("toggleMute", (data) => {
+      if (data.userId !== user.user.id && peerConnectionRef.current) {
+        const remoteStream = peerConnectionRef.current.getReceivers().find(
+          (receiver) => receiver.track.kind === "audio"
+        );
+        if (remoteStream) {
+          remoteStream.track.enabled = !data.isMuted;
+        }
+      }
+    });
+
+    return () => {
+      socket.off("toggleMute");
     };
   }, [isMuted]);
 
@@ -157,11 +200,26 @@ const VoiceChat = ({ video }) => {
         )}
 
         <IconButton
-          onClick={isCallStarted?stopCall:startCall}
+          onClick={isCallStarted ? stopCall : startCall}
           color={isMuted ? "error" : "success"}
           className="w-12 h-12 mx-auto"
         >
-          {!isCallStarted ? <MicOffIcon fontSize="large" /> : <MicIcon fontSize="large" />}
+          {!isCallStarted ? (
+            <MicOffIcon fontSize="large" />
+          ) : (
+            <MicIcon fontSize="large" />
+          )}
+        </IconButton>
+        <IconButton
+          onClick={toggleSpeaker}
+          color={isSpeakerOn ? "primary" : "error"}
+          className="w-12 h-12 mx-auto"
+        >
+          {isSpeakerOn ? (
+            <VolumeUpIcon fontSize="large" />
+          ) : (
+            <VolumeOffIcon fontSize="large" />
+          )}
         </IconButton>
 
         <audio ref={remoteAudio} autoPlay></audio>

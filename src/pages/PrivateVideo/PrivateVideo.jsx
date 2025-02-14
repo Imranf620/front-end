@@ -43,7 +43,7 @@ const PrivateVideo = () => {
 
   useEffect(() => {
     const handleVideoStateChange = ({ isPlaying, currentTime , videoId}) => {
-      if (!videoRef.current || video.id!=videoId) return;
+      if (!videoRef.current) return;
 
       if (Math.abs(videoRef.current.currentTime - currentTime) > 0.5) {
         videoRef.current.currentTime = currentTime;
@@ -86,8 +86,6 @@ const PrivateVideo = () => {
 
   const togglePlay = () => {
     if (!videoRef.current) return;
-    console.log(video.id)
-
     if (videoRef.current.paused) {
       videoRef.current
         .play()
@@ -97,7 +95,7 @@ const PrivateVideo = () => {
             socket.emit("togglePlay", {
               state: "play",
               currentTime: videoRef.current.currentTime,
-              videoId: video.id,
+              videoId: video.id
             });
           }
         })
@@ -109,7 +107,7 @@ const PrivateVideo = () => {
         socket.emit("togglePlay", {
           state: "pause",
           currentTime: videoRef.current.currentTime,
-          videoId: video.id,
+          videoId: video.id
         });
       }
     }
@@ -119,7 +117,7 @@ const PrivateVideo = () => {
     if (!videoRef.current) return;
     const currentTime = videoRef.current.currentTime;
     if (video.uploadedBy === user?.user?.id) {
-      socket.emit("seekVideo", currentTime, video.id);
+      socket.emit("seekVideo", currentTime);
     }
   };
 

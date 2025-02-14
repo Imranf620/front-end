@@ -104,8 +104,8 @@ const TermsAndConditions = () => {
           <p>
             If you have any questions about these Terms and Conditions, please
             contact us at{" "}
-            <a href="mailto:gofilez@gmail.com" className="text-blue-500">
-              gofilez@gmail.com
+            <a href="mailto:admin@gofilez.com" className="text-blue-500">
+            admin@gofilez.com
             </a>
             .
           </p>
