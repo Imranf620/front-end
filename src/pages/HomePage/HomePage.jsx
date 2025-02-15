@@ -2,8 +2,7 @@ import { ArrowCircleRight } from "@mui/icons-material";
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import Footer from "../../components/footer/Footer";
-import gsap from "gsap";
-import ScrollTrigger from "gsap/ScrollTrigger";
+
 import {
   Button,
   Dialog,
@@ -22,7 +21,7 @@ import { useDispatch } from "react-redux";
 import GuestFile from "../../components/guestFile/GuestFile";
 
 const HomePage = () => {
-  gsap.registerPlugin(ScrollTrigger);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
