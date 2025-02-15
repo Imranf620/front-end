@@ -109,6 +109,7 @@ const TermsAndConditions = () => {
             </a>
             .
           </p>
+          {/*  */}
         </div>
       </div>
       <Footer />
