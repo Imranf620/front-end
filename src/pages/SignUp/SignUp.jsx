@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,13 +11,15 @@ import HomeNav from "../../components/homeNav/HomeNav";
 import Footer from "../../components/footer/Footer";
 
 const SignUp = () => {
-  const { user, response } = useSelector((state) => state.auth);
+  const { user, response, loading } = useSelector((state) => state.auth);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [num, setNum] = useState("");
   const [socials, setSocials] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -32,7 +34,9 @@ const SignUp = () => {
     }
 
     const data = { email, name, password };
+    setIsLoading(true);
     dispatch(signUp(data));
+    setIsLoading(false);
   };
 
   const handleGoogleSignUp = () => {
@@ -159,7 +163,7 @@ const SignUp = () => {
               className="w-full py-3 mt-4"
               onClick={handleSignUp}
             >
-              Sign Up
+              {loading ? <CircularProgress /> : "Sign Up"}
             </Button>
 
             {/* OR Divider */}

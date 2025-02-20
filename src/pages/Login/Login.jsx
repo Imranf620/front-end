@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button } from "@mui/material";
+import { Button, CircularProgress } from "@mui/material";
 import GoogleIcon from "@mui/icons-material/Google";
 import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,6 +16,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -35,6 +36,8 @@ const Login = () => {
       return;
     }
     try {
+      setIsLoading(true);
+
       const result = await dispatch(login({ email, password }));
       if (result.payload?.success) {
         toast.success(result.payload.message || "Logged in successfully!");
@@ -43,6 +46,8 @@ const Login = () => {
       }
     } catch (error) {
       toast.error(error.message || "An error occurred during login.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -115,9 +120,12 @@ const Login = () => {
               color="secondary"
               className="w-full py-3 text-lg capitalize"
               onClick={handleLogin}
-              sx={{ backgroundColor: "#7B1FA2", "&:hover": { backgroundColor: "#6A1B9A" } }}
+              sx={{
+                backgroundColor: "#7B1FA2",
+                "&:hover": { backgroundColor: "#6A1B9A" },
+              }}
             >
-              Sign In
+              {isLoading ? <CircularProgress /> : "Sign In"}
             </Button>
 
             {/* OR Divider */}

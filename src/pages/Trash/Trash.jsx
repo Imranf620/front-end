@@ -106,8 +106,8 @@ const Trash = () => {
   // Pagination Logic
   const indexOfLastFile = currentPage * filesPerPage;
   const indexOfFirstFile = indexOfLastFile - filesPerPage;
-  const currentFiles = trashFiles.slice(indexOfFirstFile, indexOfLastFile);
-  const totalPages = Math.ceil(trashFiles.length / filesPerPage);
+  const currentFiles = trashFiles?.slice(indexOfFirstFile, indexOfLastFile);
+  const totalPages = Math.ceil(trashFiles?.length / filesPerPage);
 
   const handlePageChange = (event, value) => {
     setCurrentPage(value);
@@ -187,7 +187,7 @@ const Trash = () => {
           onClick={handleSelectAll}
           sx={{ marginBottom: 2 }}
         >
-          {selectedFiles.length === trashFiles.length
+          {selectedFiles?.length === trashFiles?.length
             ? "Deselect All"
             : "Select All"}
         </Button>
@@ -226,7 +226,7 @@ const Trash = () => {
         </Box>
       ) : viewMode === "grid" ? (
         <Grid container spacing={2}>
-          {currentFiles.map((file) => (
+          {currentFiles?.map((file) => (
             <Grid item key={file.id} sx={{position:"relative"}}   xs={12} sm={6} md={4}>
               <Paper sx={{ padding: 2, boxShadow: 1 }}>
                 {selectFile && (
@@ -273,7 +273,7 @@ const Trash = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {currentFiles.length > 0 ? (
+              {currentFiles?.length > 0 ? (
                 currentFiles.map((file) => (
                   <TableRow key={file.id}>
                     {selectFile && (
